@@ -1,9 +1,8 @@
 # AutoHub — TODO (start → finish)
 
 Tick each box as you go. Time estimates assume ~10 hours total.
-Every file in `src/` shows you the **complete code**, cut into small PARTS, with what every line means.
-Read a part, then **type it yourself** at the bottom of the file (typing, not copy-pasting, is how it sticks). Test where you see 🧪.
-`Navbar.jsx` and `firestore.rules` are already filled in for you.
+✅ **All the code is written.** Every file in `src/` has the finished code at the bottom, and the comments at the top explain it piece by piece.
+What's left for you: the Firebase + GNews setup (only you can do it, it needs your accounts), testing, and deploying.
 Read `docs/TUTOR.md` sections 1–4 first. Designs to copy: `src/assets/mockups/*.svg`.
 
 ---
@@ -18,7 +17,7 @@ Read `docs/TUTOR.md` sections 1–4 first. Designs to copy: `src/assets/mockups/
   - In `vite.config.js`: import `tailwindcss` from `@tailwindcss/vite` and add `tailwindcss()` to the `plugins` array
   - In `src/index.css`: delete everything and put `@import "tailwindcss";` as the only line
 - [x] Delete the demo images you won't use (`src/assets/hero.png`, `react.svg`, `vite.svg`)
-- [ ] Delete the leftover `src/App.css` (nothing imports it any more)
+- [x] Delete the leftover `src/App.css` (nothing imports it any more)
 - [ ] Copy `.env.example` → `.env.local` (it's already git-ignored, never commit it)
 
 ## Phase 1 — Firebase (≈ 45 min)
@@ -34,15 +33,15 @@ Free "Spark" plan, no credit card needed.
   - pick a location close to you (can't be changed later)
   - choose **production mode** (everything locked until you write rules)
 - [ ] Copy the rules from `firestore.rules` (already written for you) into **Firestore Database → Rules** → **Publish**
-- [ ] Write `src/firebase.js`
+- [x] Write `src/firebase.js`
 
 ## Phase 2 — Auth (≈ 1.5 h)
 
-- [ ] `src/context/AuthContext.jsx` — keep track of the logged-in user everywhere
-- [ ] Wrap `<App />` in `<AuthProvider>` and `<BrowserRouter>` inside `src/main.jsx`
-- [ ] `src/pages/Auth.jsx` — sign up / log in form
-- [ ] `src/components/ProtectedRoute.jsx` — bounce logged-out users to `/auth`
-- [ ] `src/App.jsx` — set up the routes
+- [x] `src/context/AuthContext.jsx` — keep track of the logged-in user everywhere
+- [x] Wrap `<App />` in `<AuthProvider>` and `<BrowserRouter>` inside `src/main.jsx`
+- [x] `src/pages/Auth.jsx` — sign up / log in form
+- [x] `src/components/ProtectedRoute.jsx` — bounce logged-out users to `/auth`
+- [x] `src/App.jsx` — set up the routes
 - [ ] ✅ Test: sign up a new user → see them in Firebase console **Authentication → Users**
 - [ ] ✅ Test: log out, log back in, refresh page — you should stay logged in
 
@@ -53,11 +52,11 @@ Free "Spark" plan, no credit card needed.
 
 ## Phase 4 — Real-time chat (≈ 2.5 h) ← hardest part
 
-- [ ] `src/components/MessageBubble.jsx` — one chat message
-- [ ] `src/pages/ChatRoom.jsx`
-  - [ ] listen to the `messages` collection with `onSnapshot` (loads history AND live updates) + unsubscribe on unmount
-  - [ ] send-message form
-  - [ ] auto-scroll to the bottom
+- [x] `src/components/MessageBubble.jsx` — one chat message
+- [x] `src/pages/ChatRoom.jsx`
+  - [x] listen to the `messages` collection with `onSnapshot` (loads history AND live updates) + unsubscribe on unmount
+  - [x] send-message form
+  - [x] auto-scroll to the bottom
 - [ ] ✅ Test: check **Firestore Database → Data** — your messages appear as documents
 - [ ] ✅ Test: open the app in TWO browsers (e.g. normal + incognito) with two users and chat between them. Messages must appear without refreshing.
 
@@ -65,27 +64,27 @@ Free "Spark" plan, no credit card needed.
 
 - [ ] Sign up for a free key at https://gnews.io and put it in `.env.local` as `VITE_GNEWS_API_KEY`
   - Why GNews and not NewsAPI.org? NewsAPI's free plan blocks requests from the browser once deployed (only works on localhost). GNews free tier works from the browser.
-- [ ] `src/services/newsApi.js` — the function that calls the API
-- [ ] `src/components/NewsCard.jsx` — one article card
-- [ ] `src/pages/NewsFeed.jsx` — loading / error / list of cards
+- [x] `src/services/newsApi.js` — the function that calls the API
+- [x] `src/components/NewsCard.jsx` — one article card
+- [x] `src/pages/NewsFeed.jsx` — loading / error / list of cards
 - [ ] ✅ Test: page shows car/mechanic news with images and working "Read more" links
 
 ## Phase 6 — Polish (≈ 1.5 h)
 
-- [ ] Consistent colours/spacing with Tailwind (pick 1 main colour, e.g. orange or red for "auto")
-- [ ] Looks OK on mobile (use browser DevTools device mode)
-- [ ] Loading + error states everywhere (auth, chat, news)
-- [ ] Disable the send/login buttons while a request is running
-- [ ] Use `lucide-react` icons (e.g. `Car`, `MessageCircle`, `Newspaper`, `LogOut`, `Send`)
-- [ ] Change `<title>` in `index.html` to "AutoHub"
-- [ ] `npm run lint` — fix warnings
-- [ ] `npm run build` — must finish with no errors
+- [x] Consistent colours/spacing with Tailwind (pick 1 main colour, e.g. orange or red for "auto")
+- [x] Looks OK on mobile (use browser DevTools device mode)
+- [x] Loading + error states everywhere (auth, chat, news)
+- [x] Disable the send/login buttons while a request is running
+- [x] Use `lucide-react` icons (e.g. `Car`, `MessageCircle`, `Newspaper`, `LogOut`, `Send`)
+- [x] Change `<title>` in `index.html` to "AutoHub"
+- [x] `npm run lint` — fix warnings
+- [x] `npm run build` — must finish with no errors
 
 ## Phase 7 — Ship it (≈ 30 min)
 
 - [ ] Deploy to Vercel or Netlify (import the GitHub repo, framework = Vite)
   - Add the same env variables from `.env.local` in the hosting dashboard
-  - Add a rewrite so refreshing `/chat` doesn't 404 (Vercel: `vercel.json` rewrites; Netlify: `public/_redirects` with `/* /index.html 200`)
+  - The rewrite so refreshing `/chat` doesn't 404 is already added (`vercel.json` for Vercel, `public/_redirects` for Netlify)
 - [ ] Firebase **Authentication → Settings → Authorized domains → Add domain**: add your deployed domain (e.g. `autohub.vercel.app`)
 - [ ] Update `README.md` with live link + screenshots
 - [ ] Commit & push
