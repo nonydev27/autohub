@@ -1,19 +1,22 @@
-# React + Vite
+# AutoHub 🚗💬
+`Connect, Chat, and Catch Up `
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+AutoHub is a fast, responsive web application designed for mechanics and automotive enthusiasts. Built as a rapid prototype, it provides a centralized platform for users to connect via real-time chat and stay updated with the latest automotive news and vehicle specifications.
 
-Currently, two official plugins are available:
+## Features
+- **User Authentication:** Secure sign-up and login powered by Supabase Auth.
+- **Real-Time Community Chat:** Instant messaging using Supabase Realtime subscriptions.
+- **Daily Automotive News:** Fetch and display the latest car news and specifications using the AutoTools API / CarAPI.
+- **Responsive UI:** Built with React and styled with Tailwind CSS for a modern look on any device.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Tech Stack
+- **Frontend:** React (Vite), Tailwind CSS
+- **Backend/BaaS:** Supabase (PostgreSQL, Auth, Realtime)
+- **Data Source:** AutoTools API (Free JSON endpoints) or CarAPI
+- **Routing:** React Router DOM
 
-## React Compiler
-
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
-
-Note: This will impact Vite dev & build performances.
-You can also try [the experimental native React Compiler support in plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md#rust-react-compiler) by using `compiler: true` in the plugin options instead of using the Babel plugin.
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Getting Started
+1. Clone the repository.
+2. Run `npm install` to install dependencies.
+3. Create a `.env.local` file with your Supabase credentials (`VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`).
+4. Run `npm run dev` to start the development server.
