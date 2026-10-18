@@ -75,7 +75,7 @@ function NewsFeed() {
         </p>
       )}
 
-      <div className="mb-8 flex gap-2 overflow-x-auto pb-1">
+      <div className="no-scrollbar mb-8 flex gap-2 overflow-x-auto">
         {availableCategories.map((c) => (
           <button
             key={c}

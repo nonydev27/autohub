@@ -46,7 +46,7 @@ function WarningLights() {
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1.15fr_1fr]">
-      <div className="rounded-3xl border border-white/10 bg-linear-to-b from-zinc-900 to-black p-5 shadow-2xl shadow-black/60 sm:p-7">
+      <div className="rounded-3xl border border-white/10 bg-linear-to-b from-zinc-900 to-black p-5 shadow-2xl shadow-black/60 sm:p-7 lg:self-start">
         <div className="mb-6 flex items-center justify-between text-[11px] font-semibold tracking-[0.25em] text-zinc-500 uppercase">
           <span>Instrument cluster</span>
           <span className="flex items-center gap-2">

@@ -140,7 +140,7 @@ function ChatPanel({ room, initialDraft }) {
       </div>
 
       <div className="border-t border-white/10 p-3 sm:p-4">
-        <div className="mb-2 flex gap-1 overflow-x-auto">
+        <div className="no-scrollbar mb-2 flex gap-1 overflow-x-auto">
           {QUICK_EMOJIS.map((emoji) => (
             <button
               key={emoji}

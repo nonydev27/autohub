@@ -22,7 +22,7 @@ function RoomList() {
         ))}
       </aside>
 
-      <div className="flex gap-2 overflow-x-auto pb-1 md:hidden">
+      <div className="no-scrollbar flex shrink-0 gap-2 overflow-x-auto md:hidden">
         {ROOMS.map((room) => (
           <NavLink
             key={room.id}

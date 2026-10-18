@@ -135,7 +135,7 @@ function Garage() {
                 onChange={(e) => setVin(e.target.value.toUpperCase())}
                 placeholder="e.g. 1HGCM82633A004352"
                 maxLength={17}
-                className={`${INPUT} font-mono tracking-wider uppercase`}
+                className={`${INPUT} font-mono tracking-wider uppercase placeholder:font-sans placeholder:tracking-normal placeholder:normal-case`}
               />
               <button
                 type="submit"

@@ -33,7 +33,7 @@ export async function decodeVin(vin) {
     ['Drive', result.DriveType],
     ['Gearbox', result.TransmissionStyle],
     ['Doors', result.Doors],
-    ['Built in', titleCase(result.PlantCountry)],
+    ['Built in', titleCase(result.PlantCountry).replace(/\(\w+\)/, (code) => code.toUpperCase())],
   ].filter(([, value]) => value)
 
   return {
@@ -54,7 +54,7 @@ export async function getRecalls({ make, model, year }) {
   const data = await res.json()
   return (data.results ?? []).map((recall) => ({
     id: recall.NHTSACampaignNumber,
-    component: titleCase(recall.Component),
+    component: titleCase(recall.Component).replaceAll(':', ' › '),
     summary: recall.Summary,
     consequence: recall.Consequence,
     remedy: recall.Remedy,
