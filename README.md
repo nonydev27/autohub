@@ -1,23 +1,26 @@
 # AutoHub 🚗💬
-`Connect, Chat, and Catch Up `
+`Connect, Chat, and Catch Up`
 
-AutoHub is a fast, responsive web application designed for mechanics and automotive enthusiasts. Built as a rapid prototype, it provides a centralized platform for users to connect via real-time chat and stay updated with the latest automotive news and vehicle specifications.
+AutoHub is a dark, app-like web app for mechanics and automotive enthusiasts: live chat rooms, daily car news, a diagnostics bay and a VIN-powered garage, all in one place.
 
 ## Features
-- **User Authentication:** Secure sign-up and login powered by Firebase Authentication.
-- **Real-Time Community Chat:** Instant messaging using Cloud Firestore real-time listeners.
-- **Daily Automotive News:** The latest car and mechanic news from the GNews API.
-- **Responsive UI:** Built with React and styled with Tailwind CSS for a modern look on any device.
+- **Accounts:** Sign up with your name, email and password (Firebase Authentication).
+- **Live chat rooms:** General, Repair Help, EV & Hybrids and Classics & Builds. Real-time messages with avatars, grouping, quick emoji and deleting your own messages (Cloud Firestore).
+- **Auto news:** Featured story, category filters, search, bookmarks and an in-app reader. Uses the GNews API, with built-in demo stories when no key is set.
+- **Diagnostics bay:** An interactive instrument cluster that decodes 12 dashboard warning lights, and a symptom checker that ranks likely causes with difficulty and typical cost.
+- **Garage:** Decode any 17-character VIN, check official safety recalls (NHTSA) and save your cars.
+- **Home dashboard:** Greeting, quick tiles, top stories, mechanic tip of the day and a live chat preview.
+- **Responsive:** Desktop top navigation, mobile bottom tab bar.
 
 ## Tech Stack
-- **Frontend:** React (Vite), Tailwind CSS
+- **Frontend:** React 19 (Vite), React Router, Tailwind CSS v4, lucide-react
 - **Backend/BaaS:** Firebase (Authentication, Cloud Firestore)
-- **Data Source:** GNews API
-- **Routing:** React Router DOM
+- **Data:** GNews API, NHTSA vPIC & Recalls APIs, Unsplash photos
 
 ## Getting Started
-1. Clone the repository.
-2. Run `npm install` to install dependencies.
-3. Copy `.env.example` to `.env.local` and fill in your Firebase web app config (`VITE_FIREBASE_*`) and GNews key.
-4. Set up Firebase (see `docs/TODO.md` Phase 1) and publish the rules in `firestore.rules`.
-5. Run `npm run dev` to start the development server.
+1. Clone the repository and run `npm install`.
+2. Copy `.env.example` to `.env.local` and fill in your Firebase web app config (`VITE_FIREBASE_*`). `VITE_GNEWS_API_KEY` is optional.
+3. In the Firebase console: enable Email/Password sign-in, create a Firestore database, and publish the rules from `firestore.rules`.
+4. Run `npm run dev`.
+
+Step-by-step setup: `docs/TODO.md`. How everything works: `docs/TUTOR.md`.

@@ -1,106 +1,56 @@
-# AutoHub — TODO (start → finish)
+# AutoHub — TODO
 
-Tick each box as you go. Time estimates assume ~10 hours total.
-✅ **All the code is written.** Every file in `src/` has the finished code at the bottom, and the comments at the top explain it piece by piece.
-What's left for you: the Firebase + GNews setup (only you can do it, it needs your accounts), testing, and deploying.
-Read `docs/TUTOR.md` sections 1–4 first. Designs to copy: `src/assets/mockups/*.svg`.
+✅ **All the code is written.** How every file works is explained in `docs/TUTOR.md`.
+What's left is the setup only you can do (it needs your accounts), testing, and launching.
 
 ---
 
-## Phase 0 — Setup (≈ 45 min)
-
-- [x] Scaffold Vite + React project
-- [x] Install `react-router-dom`, `lucide-react`
-- [x] Install `firebase` (replaced Supabase)
-- [x] Install Tailwind CSS (v4, Vite plugin):
-  - `npm install tailwindcss @tailwindcss/vite`
-  - In `vite.config.js`: import `tailwindcss` from `@tailwindcss/vite` and add `tailwindcss()` to the `plugins` array
-  - In `src/index.css`: delete everything and put `@import "tailwindcss";` as the only line
-- [x] Delete the demo images you won't use (`src/assets/hero.png`, `react.svg`, `vite.svg`)
-- [x] Delete the leftover `src/App.css` (nothing imports it any more)
-- [ ] Copy `.env.example` → `.env.local` (it's already git-ignored, never commit it)
-
-## Phase 1 — Firebase (≈ 45 min)
+## Phase 1 — Firebase (≈ 15 min)
 
 Free "Spark" plan, no credit card needed.
 
-- [ ] Go to https://console.firebase.google.com → **Create a project** (name it `autohub`; Google Analytics can be OFF)
-- [ ] Project overview → click the **Web icon `</>`** → register an app (no need for Firebase Hosting)
-  - copy the six values from the `firebaseConfig` it shows into `.env.local`
-  - lost it? **Project settings (gear) → General → Your apps → SDK setup and configuration → Config**
-- [ ] **Build → Authentication → Get started → Sign-in method → Email/Password → Enable** (only the first switch, not "Email link")
-- [ ] **Build → Firestore Database → Create database**
-  - pick a location close to you (can't be changed later)
-  - choose **production mode** (everything locked until you write rules)
-- [ ] Copy the rules from `firestore.rules` (already written for you) into **Firestore Database → Rules** → **Publish**
-- [x] Write `src/firebase.js`
+- [x] Create a project at https://console.firebase.google.com
+- [x] Register a web app (`</>` icon) and copy its six config values into `.env.local`
+- [ ] **Build → Authentication → Get started → Sign-in method → Email/Password → Enable** (only the first switch)
+- [ ] **Build → Firestore Database → Create database** (pick a nearby location, production mode)
+- [ ] ⚠ **Firestore Database → Rules**: delete what's there, paste ALL of `firestore.rules`, click **Publish**
+  - Do this again even if you published rules before: the new version adds chat rooms and the garage. Without it, chat and the garage will show "Missing or insufficient permissions".
 
-## Phase 2 — Auth (≈ 1.5 h)
+## Phase 2 — Live news (optional, ≈ 5 min)
 
-- [x] `src/context/AuthContext.jsx` — keep track of the logged-in user everywhere
-- [x] Wrap `<App />` in `<AuthProvider>` and `<BrowserRouter>` inside `src/main.jsx`
-- [x] `src/pages/Auth.jsx` — sign up / log in form
-- [x] `src/components/ProtectedRoute.jsx` — bounce logged-out users to `/auth`
-- [x] `src/App.jsx` — set up the routes
-- [ ] ✅ Test: sign up a new user → see them in Firebase console **Authentication → Users**
-- [ ] ✅ Test: log out, log back in, refresh page — you should stay logged in
+Without this, the News page shows built-in demo stories (with a yellow banner).
 
-## Phase 3 — Navbar (≈ 30 min)
+- [ ] Sign up at https://gnews.io and copy your API key
+- [ ] Add `VITE_GNEWS_API_KEY=your_key` to `.env.local`
+- [ ] Restart `npm run dev`
 
-- [x] `src/components/Navbar.jsx` — links to Chat & News, shows user email, logout button (filled in; read through it)
-- [ ] ✅ Test: logout sends you back to `/auth`
+## Phase 3 — Test it (≈ 20 min)
 
-## Phase 4 — Real-time chat (≈ 2.5 h) ← hardest part
+Run `npm run dev` and work through the **Testing checklist** in `docs/TUTOR.md` section 11. The important ones:
 
-- [x] `src/components/MessageBubble.jsx` — one chat message
-- [x] `src/pages/ChatRoom.jsx`
-  - [x] listen to the `messages` collection with `onSnapshot` (loads history AND live updates) + unsubscribe on unmount
-  - [x] send-message form
-  - [x] auto-scroll to the bottom
-- [ ] ✅ Test: check **Firestore Database → Data** — your messages appear as documents
-- [ ] ✅ Test: open the app in TWO browsers (e.g. normal + incognito) with two users and chat between them. Messages must appear without refreshing.
+- [ ] Sign up with your name → it shows in the navbar
+- [ ] Chat between a normal window and an incognito window (two accounts), in a couple of rooms
+- [ ] Diagnose → symptom → Run diagnosis → **Ask in Repair Help** lands in chat with text ready
+- [ ] News: filter, search, bookmark, open a story
+- [ ] Garage: try a sample VIN → check recalls → save it → refresh → still there
+- [ ] Check it at phone size (F12 → device toolbar)
+- [ ] `npm run lint` and `npm run build` both pass
 
-## Phase 5 — News feed (≈ 1.5 h)
+## Phase 4 — Ship it (≈ 30 min)
 
-- [ ] Sign up for a free key at https://gnews.io and put it in `.env.local` as `VITE_GNEWS_API_KEY`
-  - Why GNews and not NewsAPI.org? NewsAPI's free plan blocks requests from the browser once deployed (only works on localhost). GNews free tier works from the browser.
-- [x] `src/services/newsApi.js` — the function that calls the API
-- [x] `src/components/NewsCard.jsx` — one article card
-- [x] `src/pages/NewsFeed.jsx` — loading / error / list of cards
-- [ ] ✅ Test: page shows car/mechanic news with images and working "Read more" links
-
-## Phase 6 — Polish (≈ 1.5 h)
-
-- [x] Consistent colours/spacing with Tailwind (pick 1 main colour, e.g. orange or red for "auto")
-- [x] Looks OK on mobile (use browser DevTools device mode)
-- [x] Loading + error states everywhere (auth, chat, news)
-- [x] Disable the send/login buttons while a request is running
-- [x] Use `lucide-react` icons (e.g. `Car`, `MessageCircle`, `Newspaper`, `LogOut`, `Send`)
-- [x] Change `<title>` in `index.html` to "AutoHub"
-- [x] `npm run lint` — fix warnings
-- [x] `npm run build` — must finish with no errors
-
-## Phase 7 — Ship it (≈ 30 min)
-
-- [ ] Deploy to Vercel or Netlify (import the GitHub repo, framework = Vite)
-  - Add the same env variables from `.env.local` in the hosting dashboard
-  - The rewrite so refreshing `/chat` doesn't 404 is already added (`vercel.json` for Vercel, `public/_redirects` for Netlify)
-- [ ] Firebase **Authentication → Settings → Authorized domains → Add domain**: add your deployed domain (e.g. `autohub.vercel.app`)
-- [ ] Update `README.md` with live link + screenshots
-- [ ] Commit & push
+- [ ] Commit & push to GitHub
+- [ ] Deploy on Vercel or Netlify (import the repo, framework = Vite)
+  - Add every variable from `.env.local` in the hosting dashboard's Environment Variables
+  - Page-refresh rewrites are already included (`vercel.json`, `public/_redirects`)
+- [ ] Firebase **Authentication → Settings → Authorized domains → Add domain**: your live domain (e.g. `autohub.vercel.app`)
+- [ ] Add the live link and a few screenshots to `README.md`
 
 ---
 
-## If you're running out of time — cut in this order
-1. Deployment (demo on localhost instead)
-2. Mobile polish
-3. Auto-scroll in chat
-4. NewsCard images
+## Stretch ideas
 
-**Never cut:** auth, real-time chat, news list. Those are the deliverable.
-
-## Stretch goals (only if you finish early)
-- Usernames / a `users` collection instead of showing emails
-- Multiple chat rooms (add a `room` field to messages and filter with `where('room', '==', ...)`)
-- Search box on the news page (change the `q` query)
-- Typing indicator (a `typing/{uid}` document you set/delete while typing, listened to with `onSnapshot`)
+- Profile page: change your display name (`updateProfile`) and see your message count
+- Typing indicator: a `rooms/{room}/typing/{uid}` document set while typing, shown with `onSnapshot`
+- Reactions on messages (needs an `update` rule that only allows changing a `reactions` field)
+- Service reminders in the Garage: store last service mileage and show "oil change due in 1,200 km"
+- Code-split pages with `React.lazy` to shrink the first download
