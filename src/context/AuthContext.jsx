@@ -3,126 +3,157 @@
 // =====================================================================
 //
 // WHAT THIS FILE DOES
-// -------------------
-// Keeps track of "who is logged in" and makes that available to ANY
-// component without passing props through every level.
-//   Navbar needs the user's email, ChatRoom needs user.id, ProtectedRoute
-//   needs to know if anyone is logged in → they all call useAuth().
+//   Remembers "who is logged in" and shares it with EVERY component.
+//   The Navbar needs the email, ChatRoom needs the user's id, and
+//   ProtectedRoute needs to know if anyone is logged in. They all just call:
+//       const { user, signOut } = useAuth()
+//
+//   Think of it like a noticeboard at the top of the app: this file
+//   writes "the user is Karl" on it, and any component can read it.
+//
+// HOW TO USE THIS FILE
+//   The complete code is below, cut into PARTS. For each part: read the
+//   code, read what each line means, then TYPE it yourself at the bottom
+//   under ✍️.
 //
 // ---------------------------------------------------------------------
-// LESSON 1 — useState: data that changes and re-renders the screen
+// PART 1 of 6 — Imports
 // ---------------------------------------------------------------------
-//   const [count, setCount] = useState(0)
-//   //      ^value  ^setter            ^starting value
-//   setCount(5)   // React re-draws the component with count = 5
+//   import { createContext, useContext, useEffect, useState } from 'react'
+//   import { onAuthStateChanged, signOut } from 'firebase/auth'
+//   import { auth } from '../firebase'
 //
-// Normal variables (`let x = 5`) do NOT re-render the screen. State does.
+//   WHAT EACH LINE MEANS
+//   • From React:
+//       createContext → makes the "noticeboard"
+//       useContext    → reads the noticeboard
+//       useState      → a value that, when changed, redraws the screen
+//       useEffect     → run some code once the component is on screen
+//   • From Firebase:
+//       onAuthStateChanged → "call me whenever someone logs in or out"
+//       signOut            → logs the user out
+//   • `auth` is the login tool you exported from src/firebase.js.
+//     `../` means "go up one folder" (out of context/ into src/).
 //
 // ---------------------------------------------------------------------
-// LESSON 2 — useEffect: run code AFTER the component appears
+// PART 2 of 6 — Create the noticeboard
 // ---------------------------------------------------------------------
-//   useEffect(() => {
-//     console.log('I run once, when the component first shows up')
+//   const AuthContext = createContext(null)
 //
-//     return () => {
-//       console.log('I run when the component disappears (cleanup)')
+//   WHAT IT MEANS
+//   • Makes an empty noticeboard. `null` = "nothing on it yet".
+//
+// ---------------------------------------------------------------------
+// PART 3 of 6 — The Provider: the component that fills the noticeboard
+// ---------------------------------------------------------------------
+//   export function AuthProvider({ children }) {
+//     const [user, setUser] = useState(null)
+//     const [loading, setLoading] = useState(true)
+//
+//   WHAT EACH LINE MEANS
+//   • A component is just a function that returns what to show.
+//   • `{ children }` = whatever is placed INSIDE it. In main.jsx you'll
+//     write <AuthProvider><App /></AuthProvider>, so children is <App />.
+//   • `const [user, setUser] = useState(null)`
+//       user    → the current value (starts as null = nobody logged in)
+//       setUser → the function you call to change it. Calling it makes
+//                 React redraw everything that uses `user`.
+//   • loading starts as true because, when the page first opens,
+//     Firebase needs a moment to check if you were already logged in.
+//
+//   (Don't close the { yet. PARTS 4 and 5 go inside this function.)
+//
+// ---------------------------------------------------------------------
+// PART 4 of 6 — Listen for login / logout
+// ---------------------------------------------------------------------
+//     useEffect(() => {
+//       const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+//         setUser(firebaseUser)
+//         setLoading(false)
+//       })
+//       return unsubscribe
+//     }, [])
+//
+//     const logout = () => signOut(auth)
+//
+//   WHAT EACH LINE MEANS
+//   • useEffect(() => { ... }, [])  runs the code inside ONCE, right
+//     after the component first appears. The `[]` at the end is what
+//     makes it "only once".
+//   • onAuthStateChanged(auth, (firebaseUser) => { ... })
+//       "Firebase, every time the login state changes, run this function."
+//       It ALSO runs immediately when the page opens:
+//         - not logged in → firebaseUser is null
+//         - logged in     → firebaseUser is an object: { uid, email, ... }
+//   • setUser(firebaseUser) → put the user on the noticeboard
+//   • setLoading(false)     → Firebase has answered, stop showing "Loading..."
+//   • onAuthStateChanged gives back a function that STOPS listening. We
+//     call it `unsubscribe` and `return` it. React runs a returned
+//     function when the component goes away ("cleanup"), so we don't
+//     leave a listener running in the background.
+//   • `const logout = () => signOut(auth)` is a short function that logs
+//     out. `() =>` is an "arrow function": a function with no name.
+//     We call it logout because the name `signOut` is already used by
+//     the Firebase import above.
+//
+// ---------------------------------------------------------------------
+// PART 5 of 6 — What the Provider shows
+// ---------------------------------------------------------------------
+//     if (loading) {
+//       return (
+//         <div className="flex min-h-screen items-center justify-center text-slate-500">
+//           Loading...
+//         </div>
+//       )
 //     }
-//   }, [])   // ← empty array = "only on mount". [x] = "whenever x changes"
-//
-// Use it for: fetching data, subscribing to events, timers.
-// The cleanup function stops listeners so you don't get duplicates/leaks.
-//
-// ---------------------------------------------------------------------
-// LESSON 3 — Context: "global" state for a part of the app
-// ---------------------------------------------------------------------
-// 3 pieces:
-//   (a) create it:          const ThemeContext = createContext(null)
-//   (b) provide a value:    <ThemeContext.Provider value={{ theme: 'dark' }}>
-//                             {children}
-//                           </ThemeContext.Provider>
-//   (c) read it anywhere:   const { theme } = useContext(ThemeContext)
-//
-// A full mini example (a theme, NOT auth — yours follows the same shape):
-//
-//   import { createContext, useContext, useState } from 'react'
-//
-//   const ThemeContext = createContext(null)
-//
-//   export function ThemeProvider({ children }) {
-//     const [theme, setTheme] = useState('light')
-//     const toggle = () => setTheme(theme === 'light' ? 'dark' : 'light')
 //
 //     return (
-//       <ThemeContext.Provider value={{ theme, toggle }}>
+//       <AuthContext.Provider value={{ user, signOut: logout }}>
 //         {children}
-//       </ThemeContext.Provider>
+//       </AuthContext.Provider>
 //     )
 //   }
 //
-//   export function useTheme() {
-//     return useContext(ThemeContext)
+//   WHAT EACH LINE MEANS
+//   • While Firebase is still checking, show a centred "Loading..." and
+//     nothing else. `return` stops the function there.
+//   • The tag-like code is JSX: HTML-looking code inside JavaScript.
+//     `className` is how you write the HTML `class` attribute in React.
+//     The words in it are Tailwind classes (see TUTOR section 7):
+//       flex items-center justify-center → centre the content
+//       min-h-screen                     → at least the full screen height
+//   • <AuthContext.Provider value={...}> puts `value` on the noticeboard
+//     for everything inside it ({children} = your whole app).
+//   • `value={{ user, signOut: logout }}`:
+//       outer { } → "JavaScript goes here"
+//       inner { } → an object
+//       `user` is short for `user: user`
+//       `signOut: logout` → other files call it signOut
+//   • The final `}` closes the AuthProvider function from PART 3.
+//
+// ---------------------------------------------------------------------
+// PART 6 of 6 — The useAuth() shortcut
+// ---------------------------------------------------------------------
+//   // eslint-disable-next-line react-refresh/only-export-components
+//   export function useAuth() {
+//     return useContext(AuthContext)
 //   }
 //
-//   // In any component:   const { theme, toggle } = useTheme()
+//   WHAT EACH LINE MEANS
+//   • useAuth() reads the noticeboard. Any component can now write
+//     const { user, signOut } = useAuth()
+//   • The `// eslint-disable-next-line ...` comment is needed: the linter
+//     doesn't like a file exporting a component AND a normal function,
+//     and `npm run lint` fails without it. It's harmless here.
 //
-// `children` = whatever you put between the opening and closing tags:
-//   <ThemeProvider><App /></ThemeProvider>   → children is <App />
+// 🧪 TEST IT (after main.jsx and App.jsx are done)
+//   In App.jsx:  const { user } = useAuth(); console.log(user)
+//   Logged out → null. After logging in → an object with your email.
 //
+// ❌ COMMON MISTAKES
+//   - "Cannot destructure property 'user' of useAuth()" → <App /> isn't
+//     wrapped in <AuthProvider> in main.jsx.
+//   - Using user.id: Firebase calls it user.uid.
+//
+// ✍️ TYPE PARTS 1 → 6 BELOW, IN ORDER
 // ---------------------------------------------------------------------
-// LESSON 4 — The two Firebase auth calls you need here
-// ---------------------------------------------------------------------
-//   import { onAuthStateChanged, signOut } from 'firebase/auth'
-//
-//   // 1. "Tell me who's logged in — now AND whenever it changes"
-//   //    Firebase saves the login in the browser, so after a refresh it
-//   //    calls this right away with the saved user (or null).
-//   const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-//     console.log(firebaseUser)   // null if logged out, else { uid, email, ... }
-//   })
-//   unsubscribe()                 // call this in your useEffect cleanup
-//
-//   // 2. Log out
-//   signOut(auth)
-//
-// ⚠ Firebase users have `uid`, not `id`:   user.uid   user.email
-//
-// The FIRST time onAuthStateChanged fires, Firebase has finished checking
-// for a saved login. That's the moment to set loading to false.
-//
-// ---------------------------------------------------------------------
-// STEPS FOR YOUR VERSION
-// ---------------------------------------------------------------------
-// 1. Imports: createContext, useContext, useEffect, useState from 'react'
-//             { onAuthStateChanged, signOut } from 'firebase/auth'
-//             { auth } from '../firebase'
-// 2. const AuthContext = createContext(null)
-// 3. export function AuthProvider({ children }) {
-//      - state: user (null), loading (true)
-//      - useEffect (empty deps []):
-//          • const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-//              setUser(firebaseUser); setLoading(false)
-//            })
-//          • return unsubscribe        ← it IS the cleanup function
-//      - const logout = () => signOut(auth)
-//      - const value = { user, signOut: logout }
-//      - if (loading) return a centered "Loading..." <div>
-//      - otherwise return the Provider wrapping {children}
-//    }
-// 4. export function useAuth() { return useContext(AuthContext) }
-//
-//   Why `logout` and not `signOut`? The name signOut is already taken by
-//   the Firebase import. Other files still call it as `signOut` from useAuth().
-//
-// HOW TO TEST
-//   In App.jsx temporarily do:  const { user } = useAuth(); console.log(user)
-//   Logged out → null. After you log in (Auth page) → an object with email.
-//
-// COMMON MISTAKES
-//   - "Cannot destructure property 'user' of useAuth()..." → you forgot to wrap
-//     <App /> with <AuthProvider> in main.jsx
-//   - ESLint warns "Fast refresh only works when a file only exports components".
-//     That's because this file exports a hook too. It's only a warning — ignore it.
-//
-// ✍️ WRITE YOUR CODE BELOW
-// ---------------------------------------------------------------------
-

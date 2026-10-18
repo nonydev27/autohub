@@ -3,88 +3,93 @@
 // =====================================================================
 //
 // WHAT THIS FILE DOES
-// -------------------
-// Connects to YOUR Firebase project ONCE and exports two objects:
-//   auth → the login system   (used with signInWithEmailAndPassword, signOut, ...)
-//   db   → the Firestore database (used with collection, addDoc, onSnapshot, ...)
-// Every other file does:   import { auth, db } from '../firebase'
+//   Connects your app to YOUR Firebase project, once, and hands out two
+//   tools the rest of the app uses:
+//     auth → the login system
+//     db   → the database (Firestore)
+//   Other files get them with:   import { auth, db } from '../firebase'
+//
+// HOW TO USE THIS FILE
+//   The complete code is below, cut into PARTS. For each part: read the
+//   code, read what each line means, then TYPE it yourself at the bottom
+//   under ✍️ (typing it — not copy-pasting — is how it sticks).
 //
 // ---------------------------------------------------------------------
-// LESSON 1 — Environment variables (env vars)
+// PART 1 of 4 — Imports
 // ---------------------------------------------------------------------
-// Config doesn't belong in code. It lives in `.env.local`:
-//
-//     VITE_FIREBASE_API_KEY=AIzaSy...
-//     VITE_FIREBASE_PROJECT_ID=autohub-1234
-//
-// Vite reads that file and gives you the values through `import.meta.env`:
-//
-//     const projectId = import.meta.env.VITE_FIREBASE_PROJECT_ID
-//     console.log(projectId)   // "autohub-1234"
-//
-// Rules:
-//   - The name MUST start with VITE_ or Vite hides it from the browser.
-//   - Restart `npm run dev` after editing .env.local.
-//   - The Firebase apiKey is NOT a secret — it's fine in the browser.
-//     Security comes from the Security Rules you write in firestore.rules.
-//
-// ---------------------------------------------------------------------
-// LESSON 2 — Named exports vs default exports
-// ---------------------------------------------------------------------
-//   export const pi = 3.14          →  import { pi } from './math'     (curly braces)
-//   export default function App(){} →  import App from './App'         (no braces)
-//
-// For this file we use NAMED exports, so other files import with { auth, db }.
-//
-// ---------------------------------------------------------------------
-// LESSON 3 — Firebase's "modular" style
-// ---------------------------------------------------------------------
-// Firebase gives you plain FUNCTIONS, and you pass them the thing to act on:
-//
 //   import { initializeApp } from 'firebase/app'
 //   import { getAuth } from 'firebase/auth'
 //   import { getFirestore } from 'firebase/firestore'
 //
-//   const app = initializeApp(firebaseConfig)   // 1. connect to the project
-//   const auth = getAuth(app)                   // 2. get the auth service
-//   const db = getFirestore(app)                // 3. get the database service
-//
-// `firebaseConfig` is just an object with keys like apiKey, authDomain,
-// projectId... Firebase shows you this exact object when you register a web app.
+//   WHAT EACH LINE MEANS
+//   • `import { x } from 'package'` borrows the function x from a package
+//     you installed (it's in node_modules). The { } means "the one named x".
+//   • initializeApp → connects to a Firebase project
+//   • getAuth       → gives you the login tool for that project
+//   • getFirestore  → gives you the database tool for that project
 //
 // ---------------------------------------------------------------------
-// EXAMPLE — a different "config" module using the same idea
+// PART 2 of 4 — Your project's settings
 // ---------------------------------------------------------------------
-//   const apiUrl = import.meta.env.VITE_API_URL
-//   if (!apiUrl) {
-//     throw new Error('VITE_API_URL is missing — check your .env.local')
+//   const firebaseConfig = {
+//     apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+//     authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+//     projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+//     storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+//     messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+//     appId: import.meta.env.VITE_FIREBASE_APP_ID,
 //   }
-//   export const config = { apiUrl }
+//
+//   WHAT EACH LINE MEANS
+//   • `const firebaseConfig = { ... }` makes an OBJECT: a bundle of
+//     "name: value" pairs separated by commas.
+//   • `import.meta.env.VITE_...` reads a value from your .env.local file.
+//     So instead of writing your project id in the code, you write it
+//     once in .env.local:   VITE_FIREBASE_PROJECT_ID=autohub-1234
+//   • Names MUST start with VITE_ or Vite won't let the browser see them.
+//   • These values are NOT secret. Anyone can see them in the browser.
+//     What protects your data is firestore.rules.
 //
 // ---------------------------------------------------------------------
-// STEPS FOR YOUR VERSION
+// PART 3 of 4 — Stop early with a clear message if .env.local is missing
 // ---------------------------------------------------------------------
-// 1. import initializeApp, getAuth, getFirestore (Lesson 3)
-// 2. const firebaseConfig = {
-//      apiKey:            import.meta.env.VITE_FIREBASE_API_KEY,
-//      authDomain:        import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-//      projectId:         import.meta.env.VITE_FIREBASE_PROJECT_ID,
-//      storageBucket:     import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-//      messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-//      appId:             import.meta.env.VITE_FIREBASE_APP_ID,
-//    }
-// 3. If apiKey or projectId is missing, throw a helpful Error (like the example)
-// 4. const app = initializeApp(firebaseConfig)
-// 5. export const auth = getAuth(app)
-//    export const db = getFirestore(app)
+//   if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
+//     throw new Error('Firebase config is missing — check .env.local and restart npm run dev')
+//   }
 //
-// HOW TO TEST
-//   Temporarily put `console.log(auth, db)` at the bottom, open the app,
-//   check the browser console (F12). You should see two objects. Remove it after.
+//   WHAT EACH LINE MEANS
+//   • `!x` means "x is empty / missing".  `||` means "or".
+//     So: "if the apiKey is missing OR the projectId is missing..."
+//   • `throw new Error('...')` stops the app and shows that message in
+//     the browser console (F12). Much easier to understand than a
+//     confusing Firebase error later.
 //
-// COMMON MISTAKES
-//   - "auth/invalid-api-key" → .env.local missing, misnamed, or dev server not restarted
-//   - .env.local placed inside src/ — it must be in the project ROOT (next to package.json)
+// ---------------------------------------------------------------------
+// PART 4 of 4 — Connect and share the tools
+// ---------------------------------------------------------------------
+//   const app = initializeApp(firebaseConfig)
 //
-// ✍️ WRITE YOUR CODE BELOW
+//   export const auth = getAuth(app)
+//   export const db = getFirestore(app)
+//
+//   WHAT EACH LINE MEANS
+//   • initializeApp(firebaseConfig) connects using your settings and
+//     gives back the connection, which we call `app`.
+//   • getAuth(app) / getFirestore(app) take that connection and give
+//     you the login tool and the database tool.
+//   • `export` lets other files import them. Because it's
+//     `export const auth`, other files write  import { auth } from ...
+//     (with curly braces, using the exact same name).
+//
+// 🧪 TEST IT
+//   Add  console.log(auth, db)  at the very bottom, run `npm run dev`,
+//   open the app, press F12 → Console. You should see two objects.
+//   Delete the console.log afterwards.
+//
+// ❌ COMMON MISTAKES
+//   - "Firebase config is missing" → .env.local isn't in the project ROOT
+//     (next to package.json), a name is misspelled, or you didn't restart
+//     `npm run dev` after editing it.
+//
+// ✍️ TYPE PARTS 1 → 4 BELOW, IN ORDER
 // ---------------------------------------------------------------------

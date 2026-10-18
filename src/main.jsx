@@ -2,33 +2,51 @@
 // FILE: src/main.jsx  — the very first JS file that runs
 // =====================================================================
 //
-// HOW THE APP STARTS
-//   index.html has <div id="root"></div> and loads this file.
-//   createRoot(...).render(...) puts your React app inside that div.
+// WHAT THIS FILE DOES
+//   index.html has an empty <div id="root"></div> and loads this file.
+//   This file puts your React app inside that div.
 //
-// WHAT YOU NEED TO ADD
-//   "Wrappers" (providers) that give features to everything inside them:
-//     - BrowserRouter → makes <Routes>, <NavLink>, <Navigate> work
-//     - AuthProvider  → makes useAuth() work
+//   You need to WRAP <App /> in two "providers". A provider gives a
+//   feature to everything inside it:
+//     BrowserRouter → makes pages/links work (<Routes>, <NavLink>, <Navigate>)
+//     AuthProvider  → makes useAuth() work
 //
-//   Order matters: outer things are available to inner things.
+// HOW TO USE THIS FILE
+//   This file already has code at the bottom. You only ADD 2 imports and
+//   2 wrappers. The finished file is shown below; edit yours to match.
 //
-//   EXAMPLE (with made-up providers):
+// ---------------------------------------------------------------------
+// THE FINISHED CODE (new lines marked ← NEW)
+// ---------------------------------------------------------------------
+//   import { StrictMode } from 'react'
+//   import { createRoot } from 'react-dom/client'
+//   import { BrowserRouter } from 'react-router-dom'           ← NEW
+//   import './index.css'
+//   import App from './App.jsx'
+//   import { AuthProvider } from './context/AuthContext'       ← NEW
+//
+//   createRoot(document.getElementById('root')).render(
 //     <StrictMode>
-//       <ThemeProvider>
-//         <LanguageProvider>
+//       <BrowserRouter>                                        ← NEW
+//         <AuthProvider>                                       ← NEW
 //           <App />
-//         </LanguageProvider>
-//       </ThemeProvider>
-//     </StrictMode>
+//         </AuthProvider>                                      ← NEW
+//       </BrowserRouter>                                       ← NEW
+//     </StrictMode>,
+//   )
 //
-// STEPS
-//   1. import { BrowserRouter } from 'react-router-dom'
-//   2. import { AuthProvider } from './context/AuthContext'
-//   3. Nest:  StrictMode > BrowserRouter > AuthProvider > App
+//   WHAT EACH LINE MEANS
+//   • document.getElementById('root') finds the empty div in index.html.
+//   • createRoot(...).render(...) draws your app inside it.
+//   • The ORDER of wrappers matters: outer ones are available to inner
+//     ones. BrowserRouter is outside AuthProvider so that everything,
+//     including the auth code, can use routing.
+//   • Every opening tag <X> needs its closing tag </X>, in reverse order
+//     (like brackets in maths).
+//   • StrictMode runs some code twice while developing, to catch bugs.
+//     If you see a console.log printed twice, that's why. It's normal.
 //
-// NOTE: StrictMode runs effects twice in development on purpose (to catch
-// missing cleanups). If you see a console.log twice, that's why — it's normal.
+// ✍️ EDIT THE CODE BELOW TO MATCH
 // =====================================================================
 
 import { StrictMode } from 'react'
