@@ -12,8 +12,8 @@
 //     AuthProvider  → makes useAuth() work
 //
 // HOW TO USE THIS FILE
-//   This file already has code at the bottom. You only ADD 2 imports and
-//   2 wrappers. The finished file is shown below; edit yours to match.
+//   The finished code is at the bottom of this file. The PARTS below
+//   explain it piece by piece, line by line.
 //
 // ---------------------------------------------------------------------
 // THE FINISHED CODE (new lines marked ← NEW)
@@ -46,16 +46,22 @@
 //   • StrictMode runs some code twice while developing, to catch bugs.
 //     If you see a console.log printed twice, that's why. It's normal.
 //
-// ✍️ EDIT THE CODE BELOW TO MATCH
+// ✅ FINISHED CODE
 // =====================================================================
 
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import App from './App.jsx'
+import { AuthProvider } from './context/AuthContext'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <App />
+    <BrowserRouter>
+      <AuthProvider>
+        <App />
+      </AuthProvider>
+    </BrowserRouter>
   </StrictMode>,
 )

@@ -9,8 +9,8 @@
 //       <ProtectedRoute><ChatRoom /></ProtectedRoute>
 //
 // HOW TO USE THIS FILE
-//   The complete code is below (it's short). Read what each line means,
-//   then TYPE it yourself at the bottom under ✍️.
+//   The finished code is at the bottom of this file. The PARTS below
+//   explain it piece by piece, line by line.
 //
 // ---------------------------------------------------------------------
 // THE CODE
@@ -48,5 +48,18 @@
 //   While logged out, type localhost:5173/chat in the address bar.
 //   You should land on /auth.
 //
-// ✍️ TYPE THE CODE BELOW
+// ✅ FINISHED CODE — this is the code from the parts above, put together.
 // ---------------------------------------------------------------------
+
+import { Navigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
+
+function ProtectedRoute({ children }) {
+  const { user } = useAuth()
+
+  if (!user) return <Navigate to="/auth" replace />
+
+  return children
+}
+
+export default ProtectedRoute

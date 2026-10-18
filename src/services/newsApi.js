@@ -11,9 +11,8 @@
 //   API docs: https://gnews.io/docs/v4#search-endpoint  (free: 100 requests/day)
 //
 // HOW TO USE THIS FILE
-//   The complete code is below, cut into PARTS. For each part: read the
-//   code, read what each line means, then TYPE it yourself at the bottom
-//   under ✍️.
+//   The finished code is at the bottom of this file. The PARTS below
+//   explain it piece by piece, line by line.
 //
 // ---------------------------------------------------------------------
 // PART 1 of 3 — Your API key
@@ -81,5 +80,25 @@
 //   so it returns fake data and never calls GNews. Delete it when done:
 //     return [{ title: 'Test article', description: 'Some text...', url: 'https://example.com', image: '', publishedAt: new Date().toISOString(), source: { name: 'Test' } }]
 //
-// ✍️ TYPE PARTS 1 → 3 BELOW, IN ORDER
+// ✅ FINISHED CODE — this is the code from the parts above, put together.
 // ---------------------------------------------------------------------
+
+const API_KEY = import.meta.env.VITE_GNEWS_API_KEY
+
+export async function fetchCarNews() {
+  const params = new URLSearchParams({
+    q: 'automotive OR "car repair" OR mechanic',
+    lang: 'en',
+    max: '10',
+    apikey: API_KEY,
+  })
+
+  const res = await fetch(`https://gnews.io/api/v4/search?${params}`)
+
+  if (!res.ok) {
+    throw new Error(`Could not load news (error ${res.status})`)
+  }
+
+  const data = await res.json()
+  return data.articles
+}

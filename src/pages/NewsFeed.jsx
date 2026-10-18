@@ -7,9 +7,8 @@
 //   While waiting → "Loading news...". If it fails → red error + "Try again".
 //
 // HOW TO USE THIS FILE
-//   The complete code is below, cut into PARTS. For each part: read the
-//   code, read what each line means, then TYPE it yourself at the bottom
-//   under ✍️.
+//   The finished code is at the bottom of this file. The PARTS below
+//   explain it piece by piece, line by line.
 //
 // ---------------------------------------------------------------------
 // PART 1 of 4 — Imports
@@ -135,5 +134,78 @@
 //   article in a new tab. Put a wrong key in .env.local (and restart) to
 //   see the error + "Try again" button.
 //
-// ✍️ TYPE PARTS 1 → 4 BELOW, IN ORDER
+// ✅ FINISHED CODE — this is the code from the parts above, put together.
 // ---------------------------------------------------------------------
+
+import { useEffect, useState } from 'react'
+import { Newspaper } from 'lucide-react'
+import { fetchCarNews } from '../services/newsApi'
+import NewsCard from '../components/NewsCard'
+
+function NewsFeed() {
+  const [articles, setArticles] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [attempt, setAttempt] = useState(0)
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const result = await fetchCarNews()
+        setArticles(result)
+      } catch (err) {
+        setError(err.message)
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
+  }, [attempt])
+
+  function tryAgain() {
+    setLoading(true)
+    setError('')
+    setAttempt(attempt + 1)
+  }
+
+  const today = new Date().toLocaleDateString(undefined, {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  })
+
+  return (
+    <main className="mx-auto max-w-6xl p-6">
+      <div className="flex items-center gap-3">
+        <Newspaper className="h-7 w-7 text-orange-500" />
+        <div>
+          <h1 className="text-2xl font-bold">Today's Auto News</h1>
+          <p className="text-sm text-slate-500">{today}</p>
+        </div>
+      </div>
+
+      {loading && <p className="mt-6 text-slate-500">Loading news...</p>}
+
+      {error && (
+        <div className="mt-6">
+          <p className="text-red-600">{error}</p>
+          <button
+            onClick={tryAgain}
+            className="mt-2 rounded-lg bg-orange-500 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-600"
+          >
+            Try again
+          </button>
+        </div>
+      )}
+
+      <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {articles.map((a) => (
+          <NewsCard key={a.url} article={a} />
+        ))}
+      </div>
+    </main>
+  )
+}
+
+export default NewsFeed

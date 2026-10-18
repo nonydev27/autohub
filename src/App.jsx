@@ -9,15 +9,8 @@
 //   (The app shows a blank page / error until you write this. That's expected.)
 //
 // HOW TO USE THIS FILE
-//   The complete code is below, cut into PARTS. For each part: read the
-//   code, read what each line means, then TYPE it yourself at the bottom
-//   under ✍️.
-//
-// TIP: App.jsx imports ChatRoom and NewsFeed, which you write later. So
-// they don't break the app yet, give those files a tiny placeholder first:
-//     export default function ChatRoom() { return <p>Chat page</p> }
-//     export default function NewsFeed() { return <p>News page</p> }
-// (Replace them with the real code when you reach those files.)
+//   The finished code is at the bottom of this file. The PARTS below
+//   explain it piece by piece, line by line.
 //
 // ---------------------------------------------------------------------
 // PART 1 of 3 — Imports
@@ -86,5 +79,33 @@
 //   Logged out: visiting /chat should land you on /auth.
 //   Logged in: visiting /auth should land you on /chat.
 //
-// ✍️ TYPE PARTS 1 → 3 BELOW, IN ORDER
+// ✅ FINISHED CODE — this is the code from the parts above, put together.
 // ---------------------------------------------------------------------
+
+import { Navigate, Route, Routes } from 'react-router-dom'
+import { useAuth } from './context/AuthContext'
+import Navbar from './components/Navbar'
+import ProtectedRoute from './components/ProtectedRoute'
+import Auth from './pages/Auth'
+import ChatRoom from './pages/ChatRoom'
+import NewsFeed from './pages/NewsFeed'
+
+function App() {
+  const { user } = useAuth()
+
+  return (
+    <div className="min-h-screen bg-slate-100 text-slate-900">
+      {user && <Navbar />}
+
+      <Routes>
+        <Route path="/auth" element={user ? <Navigate to="/chat" replace /> : <Auth />} />
+        <Route path="/chat" element={<ProtectedRoute><ChatRoom /></ProtectedRoute>} />
+        <Route path="/news" element={<ProtectedRoute><NewsFeed /></ProtectedRoute>} />
+        <Route path="/" element={<Navigate to="/chat" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </div>
+  )
+}
+
+export default App

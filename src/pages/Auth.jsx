@@ -9,9 +9,8 @@
 //   to /chat by itself. This file doesn't need to redirect anywhere.
 //
 // HOW TO USE THIS FILE
-//   The complete code is below, cut into PARTS. For each part: read the
-//   code, read what each line means, then TYPE it yourself at the bottom
-//   under ✍️. Open the mockup in your browser to see what you're building.
+//   The finished code is at the bottom of this file. The PARTS below
+//   explain it piece by piece, line by line.
 //
 // ---------------------------------------------------------------------
 // PART 1 of 6 — Imports
@@ -233,5 +232,116 @@
 //     console → Authentication → Sign-in method.
 //   - Page reloads when you click the button → missing e.preventDefault().
 //
-// ✍️ TYPE PARTS 1 → 6 BELOW, IN ORDER
+// ✅ FINISHED CODE — this is the code from the parts above, put together.
 // ---------------------------------------------------------------------
+
+import { useState } from 'react'
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth'
+import { Car } from 'lucide-react'
+import { auth } from '../firebase'
+
+const friendlyErrors = {
+  'auth/invalid-credential': 'Wrong email or password',
+  'auth/email-already-in-use': 'That email already has an account',
+  'auth/weak-password': 'Password must be at least 6 characters',
+  'auth/invalid-email': 'That email address looks wrong',
+  'auth/too-many-requests': 'Too many tries — wait a minute and try again',
+}
+
+function Auth() {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [isSignUp, setIsSignUp] = useState(false)
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  async function handleSubmit(e) {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+
+    try {
+      if (isSignUp) {
+        await createUserWithEmailAndPassword(auth, email, password)
+      } else {
+        await signInWithEmailAndPassword(auth, email, password)
+      }
+    } catch (err) {
+      setError(friendlyErrors[err.code] ?? err.message)
+    }
+
+    setLoading(false)
+  }
+
+  function toggleMode() {
+    setIsSignUp(!isSignUp)
+    setError('')
+  }
+
+  let buttonText = isSignUp ? 'Sign Up' : 'Log In'
+  if (loading) buttonText = 'Please wait...'
+
+  return (
+    <div className="flex min-h-screen items-center justify-center p-4">
+      <div className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-lg">
+        <div className="mb-6 flex flex-col items-center gap-2 text-center">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-500 text-white">
+            <Car size={28} />
+          </div>
+          <h1 className="text-2xl font-bold">AutoHub</h1>
+          <p className="text-sm text-slate-500">Connect, chat &amp; catch up on auto news</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <label className="flex flex-col gap-1 text-sm font-medium">
+            Email
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              className="rounded-lg border border-slate-300 px-3 py-2 font-normal focus:border-orange-500 focus:outline-none"
+            />
+          </label>
+
+          <label className="flex flex-col gap-1 text-sm font-medium">
+            Password
+            <input
+              type="password"
+              required
+              minLength={6}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              className="rounded-lg border border-slate-300 px-3 py-2 font-normal focus:border-orange-500 focus:outline-none"
+            />
+          </label>
+
+          {error && <p className="text-sm text-red-600">{error}</p>}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="rounded-lg bg-orange-500 py-2 font-semibold text-white hover:bg-orange-600 disabled:opacity-50"
+          >
+            {buttonText}
+          </button>
+        </form>
+
+        <button
+          type="button"
+          onClick={toggleMode}
+          className="mt-4 w-full text-center text-sm text-slate-500"
+        >
+          {isSignUp ? 'Have an account? ' : "Don't have an account? "}
+          <span className="font-medium text-orange-600 hover:underline">
+            {isSignUp ? 'Log in' : 'Sign up'}
+          </span>
+        </button>
+      </div>
+    </div>
+  )
+}
+
+export default Auth

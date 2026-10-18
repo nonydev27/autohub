@@ -15,9 +15,8 @@
 //   browser (yours too) → their `messages` list updates → bubble appears.
 //
 // HOW TO USE THIS FILE
-//   The complete code is below, cut into PARTS. For each part: read the
-//   code, read what each line means, then TYPE it yourself at the bottom
-//   under ✍️. This is the biggest file. Take a break between parts.
+//   The finished code is at the bottom of this file. The PARTS below
+//   explain it piece by piece, line by line.
 //
 // ---------------------------------------------------------------------
 // PART 1 of 6 — Imports
@@ -257,5 +256,116 @@
 //     of user.uid somewhere.
 //   - Nothing at all → did you create the Firestore database?
 //
-// ✍️ TYPE PARTS 1 → 6 BELOW, IN ORDER
+// ✅ FINISHED CODE — this is the code from the parts above, put together.
 // ---------------------------------------------------------------------
+
+import { useEffect, useRef, useState } from 'react'
+import {
+  addDoc,
+  collection,
+  limitToLast,
+  onSnapshot,
+  orderBy,
+  query,
+  serverTimestamp,
+} from 'firebase/firestore'
+import { Send } from 'lucide-react'
+import { db } from '../firebase'
+import { useAuth } from '../context/AuthContext'
+import MessageBubble from '../components/MessageBubble'
+
+function ChatRoom() {
+  const { user } = useAuth()
+  const [messages, setMessages] = useState([])
+  const [newMessage, setNewMessage] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const bottomRef = useRef(null)
+
+  useEffect(() => {
+    const q = query(collection(db, 'messages'), orderBy('createdAt'), limitToLast(100))
+
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const list = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+        setMessages(list)
+        setLoading(false)
+      },
+      (err) => {
+        setError(err.message)
+        setLoading(false)
+      },
+    )
+
+    return unsubscribe
+  }, [])
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
+
+  async function handleSend(e) {
+    e.preventDefault()
+    const text = newMessage.trim()
+    if (!text) return
+
+    setNewMessage('')
+    try {
+      await addDoc(collection(db, 'messages'), {
+        content: text,
+        userId: user.uid,
+        userEmail: user.email,
+        createdAt: serverTimestamp(),
+      })
+    } catch (err) {
+      setError(err.message)
+      setNewMessage(text)
+    }
+  }
+
+  return (
+    <div className="mx-auto flex h-[calc(100vh-4rem)] max-w-3xl flex-col p-4">
+      <div className="mb-3 flex items-center justify-between rounded-xl bg-white px-4 py-3 shadow-sm">
+        <h1 className="font-semibold">Community Chat</h1>
+        <span className="flex items-center gap-2 text-sm text-slate-500">
+          <span className="h-2 w-2 rounded-full bg-green-500" /> Live
+        </span>
+      </div>
+
+      <div className="flex-1 space-y-3 overflow-y-auto rounded-xl bg-white p-4 shadow-sm">
+        {loading && <p className="text-center text-slate-500">Loading messages...</p>}
+        {error && <p className="text-center text-red-600">{error}</p>}
+        {!loading && !error && messages.length === 0 && (
+          <p className="text-center text-slate-500">No messages yet — say hi! 👋</p>
+        )}
+
+        {messages.map((m) => (
+          <MessageBubble key={m.id} message={m} isOwn={m.userId === user.uid} />
+        ))}
+
+        <div ref={bottomRef} />
+      </div>
+
+      <form onSubmit={handleSend} className="mt-3 flex gap-2">
+        <input
+          value={newMessage}
+          onChange={(e) => setNewMessage(e.target.value)}
+          placeholder="Type a message..."
+          maxLength={1000}
+          className="flex-1 rounded-lg border border-slate-300 bg-white px-4 py-2 focus:border-orange-500 focus:outline-none"
+        />
+        <button
+          type="submit"
+          disabled={!newMessage.trim()}
+          className="flex items-center gap-2 rounded-lg bg-orange-500 px-4 py-2 font-semibold text-white hover:bg-orange-600 disabled:opacity-50"
+        >
+          <Send size={18} />
+          <span className="hidden sm:inline">Send</span>
+        </button>
+      </form>
+    </div>
+  )
+}
+
+export default ChatRoom

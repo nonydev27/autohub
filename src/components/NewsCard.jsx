@@ -8,9 +8,8 @@
 //   Like MessageBubble, it just shows what it's given.
 //
 // HOW TO USE THIS FILE
-//   The complete code is below, cut into PARTS. For each part: read the
-//   code, read what each line means, then TYPE it yourself at the bottom
-//   under ✍️.
+//   The finished code is at the bottom of this file. The PARTS below
+//   explain it piece by piece, line by line.
 //
 // ---------------------------------------------------------------------
 // PART 1 of 2 — Start the component and format the date
@@ -80,5 +79,41 @@
 //     rel="noopener noreferrer" = a safety rule whenever you use _blank.
 //     It's a normal <a>, not NavLink, because it goes to ANOTHER website.
 //
-// ✍️ TYPE PARTS 1 → 2 BELOW, IN ORDER
+// ✅ FINISHED CODE — this is the code from the parts above, put together.
 // ---------------------------------------------------------------------
+
+function NewsCard({ article }) {
+  const date = new Date(article.publishedAt).toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+  })
+
+  return (
+    <article className="flex flex-col overflow-hidden rounded-xl bg-white shadow-sm transition hover:shadow-lg">
+      {article.image && (
+        <img src={article.image} alt={article.title} className="h-44 w-full object-cover" />
+      )}
+
+      <div className="flex flex-1 flex-col gap-2 p-4">
+        <h3 className="line-clamp-2 font-semibold">{article.title}</h3>
+        <p className="line-clamp-3 text-sm text-slate-500">{article.description}</p>
+
+        <div className="mt-auto flex items-center justify-between pt-2 text-xs text-slate-400">
+          <span>
+            {article.source?.name} · {date}
+          </span>
+          <a
+            href={article.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-orange-600 hover:underline"
+          >
+            Read more →
+          </a>
+        </div>
+      </div>
+    </article>
+  )
+}
+
+export default NewsCard

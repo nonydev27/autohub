@@ -9,9 +9,8 @@
 //   It only receives data and shows it: no state, no Firebase. Easy one!
 //
 // HOW TO USE THIS FILE
-//   The complete code is below, cut into PARTS. For each part: read the
-//   code, read what each line means, then TYPE it yourself at the bottom
-//   under ✍️.
+//   The finished code is at the bottom of this file. The PARTS below
+//   explain it piece by piece, line by line.
 //
 // ---------------------------------------------------------------------
 // PART 1 of 3 — Start the component and work out the label
@@ -86,5 +85,31 @@
 //     <MessageBubble isOwn={false} message={{ content: 'Hi', userEmail: 'a@b.com', createdAt: null }} />
 //   (and import MessageBubble at the top of ChatRoom). Try isOwn={true} too.
 //
-// ✍️ TYPE PARTS 1 → 3 BELOW, IN ORDER
+// ✅ FINISHED CODE — this is the code from the parts above, put together.
 // ---------------------------------------------------------------------
+
+function MessageBubble({ message, isOwn }) {
+  const name = isOwn ? 'You' : message.userEmail?.split('@')[0]
+
+  const time = message.createdAt
+    ? message.createdAt.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    : ''
+
+  const bubbleStyle = isOwn
+    ? 'bg-orange-500 text-white rounded-br-sm'
+    : 'bg-slate-200 text-slate-900 rounded-bl-sm'
+
+  return (
+    <div className={`flex flex-col ${isOwn ? 'items-end' : 'items-start'}`}>
+      <span className="mb-1 text-xs text-slate-500">
+        {name}
+        {time && ` · ${time}`}
+      </span>
+      <p className={`max-w-[75%] break-words rounded-2xl px-4 py-2 ${bubbleStyle}`}>
+        {message.content}
+      </p>
+    </div>
+  )
+}
+
+export default MessageBubble
