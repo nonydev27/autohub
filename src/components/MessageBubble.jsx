@@ -31,6 +31,12 @@
 //   const d = new Date('2026-10-18T14:05:00Z')
 //   d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })   // "14:05"
 //
+//   Firestore gives you a Timestamp object, not a Date. Convert it:
+//     message.createdAt.toDate()     // → a normal JS Date
+//   ⚠ For a split second after YOU send, createdAt is null (the server
+//   hasn't filled it in yet). Use optional chaining so it doesn't crash:
+//     message.createdAt?.toDate()    // undefined instead of an error
+//
 // ---------------------------------------------------------------------
 // EXAMPLE — a notification pill (same idea)
 // ---------------------------------------------------------------------
@@ -48,9 +54,9 @@
 // STEPS FOR YOUR VERSION
 // ---------------------------------------------------------------------
 // 1. function MessageBubble({ message, isOwn })
-//    message = { id, content, user_id, user_email, created_at }
-// 2. const name = isOwn ? 'You' : message.user_email?.split('@')[0]
-// 3. const time = formatted created_at (Lesson 3)
+//    message = { id, content, userId, userEmail, createdAt }
+// 2. const name = isOwn ? 'You' : message.userEmail?.split('@')[0]
+// 3. const time = createdAt?.toDate() formatted (Lesson 3), or '' while it's null
 // 4. Outer div: flex flex-col + items-end (own) or items-start (others)
 //      small label:  name · time   (text-xs text-slate-500)
 //      bubble:       max-w-[75%] rounded-2xl px-4 py-2
@@ -61,7 +67,7 @@
 //
 // HOW TO TEST
 //   Before ChatRoom works, render it with fake data in ChatRoom:
-//   <MessageBubble isOwn={false} message={{ content: 'Hi', user_email: 'a@b.com', created_at: new Date().toISOString() }} />
+//   <MessageBubble isOwn={false} message={{ content: 'Hi', userEmail: 'a@b.com', createdAt: null }} />
 //
 // ✍️ WRITE YOUR CODE BELOW
 // ---------------------------------------------------------------------

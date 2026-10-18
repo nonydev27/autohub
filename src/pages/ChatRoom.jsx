@@ -4,63 +4,76 @@
 //
 // WHAT THIS FILE DOES
 // -------------------
-// The live chat. Three jobs:
-//   1. On load, fetch old messages from the `messages` table.
-//   2. Listen for NEW rows (realtime) and add them to the screen instantly.
-//   3. A form that inserts a new row when you hit Send.
+// The live chat. Two jobs:
+//   1. LISTEN to the `messages` collection. Firestore sends you all the
+//      existing messages right away, then sends the list again every time
+//      someone adds one. (History + realtime in ONE listener.)
+//   2. A form that adds a new document when you hit Send.
 //
-//   You type → INSERT into Supabase → Supabase broadcasts "new row!" →
-//   EVERY open browser (including yours) gets it → added to `messages` state.
+//   You type → addDoc to Firestore → Firestore notifies every listener →
+//   EVERY open browser (including yours) gets the new list → `messages` state.
 //
 // Take it one job at a time and test after each.
 //
 // ---------------------------------------------------------------------
-// LESSON 1 — Reading from a table
+// LESSON 1 — Building a query
 // ---------------------------------------------------------------------
-//   const { data, error } = await supabase
-//     .from('messages')                          // which table
-//     .select('*')                               // which columns (* = all)
-//     .order('created_at', { ascending: true })  // oldest first
-//     .limit(100)                                // optional
+//   import { collection, query, orderBy, limit } from 'firebase/firestore'
 //
-//   data  → an array of row objects: [{ id, content, user_email, ... }, ...]
-//
-// ---------------------------------------------------------------------
-// LESSON 2 — Writing to a table
-// ---------------------------------------------------------------------
-//   const { error } = await supabase
-//     .from('messages')
-//     .insert({ content: 'Hello', user_id: user.id, user_email: user.email })
-//
-//   If you get "new row violates row-level security policy" → your INSERT
-//   policy is missing, or user_id doesn't match the logged-in user.
+//   const q = query(
+//     collection(db, 'messages'),     // which collection
+//     orderBy('createdAt', 'asc'),    // oldest first
+//     limit(100),                     // optional
+//   )
+//   A query is just a description. Nothing is fetched until you use it.
 //
 // ---------------------------------------------------------------------
-// LESSON 3 — Realtime: listening for new rows
+// LESSON 2 — Writing a document
 // ---------------------------------------------------------------------
-//   const channel = supabase
-//     .channel('any-name-you-like')
-//     .on(
-//       'postgres_changes',
-//       { event: 'INSERT', schema: 'public', table: 'messages' },
-//       (payload) => {
-//         console.log('New row!', payload.new)   // payload.new = the inserted row
-//       }
-//     )
-//     .subscribe()
+//   import { addDoc, serverTimestamp } from 'firebase/firestore'
+//
+//   await addDoc(collection(db, 'messages'), {
+//     content: 'Hello',
+//     userId: user.uid,              // ⚠ uid, not id
+//     userEmail: user.email,
+//     createdAt: serverTimestamp(),  // Firebase fills in the real time
+//   })
+//   Firestore makes up a unique id for the document automatically.
+//   It THROWS on failure, so use try/catch.
+//
+//   If you get "Missing or insufficient permissions" → your rules in
+//   firestore.rules aren't published, or userId doesn't match the logged-in user.
+//
+// ---------------------------------------------------------------------
+// LESSON 3 — Realtime: onSnapshot
+// ---------------------------------------------------------------------
+//   import { onSnapshot } from 'firebase/firestore'
+//
+//   const unsubscribe = onSnapshot(
+//     q,
+//     (snapshot) => {
+//       // runs NOW with every matching doc, then AGAIN after every change
+//       console.log(snapshot.docs.length, 'messages')
+//     },
+//     (err) => console.log(err.message),   // optional: runs if it fails
+//   )
 //
 //   // Stop listening (put this in the useEffect cleanup):
-//   supabase.removeChannel(channel)
+//   unsubscribe()
 //
 // ---------------------------------------------------------------------
-// LESSON 4 — Adding to an array in state (the right way)
+// LESSON 4 — Turning a snapshot into a plain array
 // ---------------------------------------------------------------------
-//   setItems([...items, newItem])            ✗ risky inside listeners: `items`
-//                                              may be an OLD copy (stale)
-//   setItems((prev) => [...prev, newItem])   ✓ React gives you the latest value
+//   snapshot.docs        → list of documents
+//   doc.id               → the auto-generated id
+//   doc.data()           → the fields: { content, userId, userEmail, createdAt }
 //
-//   `...prev` = "spread": copies everything from prev into the new array.
-//   NEVER do items.push(x) — React won't notice the change.
+//   const list = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+//   setMessages(list)
+//
+//   `...doc.data()` = "spread": copies every field into the new object.
+//   Because Firestore gives you the WHOLE list each time, you just replace
+//   the state — no need to push/append anything yourself.
 //
 // ---------------------------------------------------------------------
 // LESSON 5 — Rendering a list with .map()
@@ -69,7 +82,7 @@
 //   <ul>
 //     {fruits.map((f) => <li key={f.id}>{f.name}</li>)}
 //   </ul>
-//   `key` must be unique per item — use the row id.
+//   `key` must be unique per item — use the document id.
 //
 // ---------------------------------------------------------------------
 // LESSON 6 — useRef: grab a real DOM element (for auto-scroll)
@@ -82,25 +95,17 @@
 //   }, [messages])                                  ← runs every time messages change
 //
 // ---------------------------------------------------------------------
-// EXAMPLE — a live "comments" box (same pattern, different table)
+// EXAMPLE — a live "comments" box (same pattern, different collection)
 // ---------------------------------------------------------------------
 //   function Comments() {
 //     const [comments, setComments] = useState([])
 //
 //     useEffect(() => {
-//       async function load() {
-//         const { data } = await supabase.from('comments').select('*').order('created_at')
-//         setComments(data ?? [])
-//       }
-//       load()
-//
-//       const channel = supabase
-//         .channel('comments-live')
-//         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'comments' },
-//             (payload) => setComments((prev) => [...prev, payload.new]))
-//         .subscribe()
-//
-//       return () => supabase.removeChannel(channel)
+//       const q = query(collection(db, 'comments'), orderBy('createdAt'))
+//       const unsubscribe = onSnapshot(q, (snapshot) => {
+//         setComments(snapshot.docs.map((d) => ({ id: d.id, ...d.data() })))
+//       })
+//       return unsubscribe
 //     }, [])
 //
 //     return <div>{comments.map((c) => <p key={c.id}>{c.text}</p>)}</div>
@@ -109,42 +114,45 @@
 // ---------------------------------------------------------------------
 // STEPS FOR YOUR VERSION
 // ---------------------------------------------------------------------
-// 1. Imports: useEffect, useRef, useState, { supabase }, { useAuth },
-//             MessageBubble, { Send } from 'lucide-react'
+// 1. Imports: useEffect, useRef, useState, { db } from '../firebase',
+//             { addDoc, collection, limit, onSnapshot, orderBy, query,
+//               serverTimestamp } from 'firebase/firestore',
+//             { useAuth }, MessageBubble, { Send } from 'lucide-react'
 // 2. const { user } = useAuth()
 //    State: messages ([]), newMessage (''), loading (true), error ('')
 //    const bottomRef = useRef(null)
-// 3. useEffect #1 — load history (Lesson 1), set loading false
-// 4. useEffect #2 — realtime subscribe + cleanup (Lessons 3 & 4)
-//    (You can combine #1 and #2 into one effect like the example.)
-// 5. useEffect #3 — auto-scroll when messages change (Lesson 6)
-// 6. handleSend(e):
+// 3. useEffect #1 (deps []) — build the query (Lesson 1), onSnapshot (Lesson 3):
+//      success → setMessages(list) (Lesson 4); setLoading(false)
+//      error   → setError(err.message); setLoading(false)
+//      return unsubscribe
+// 4. useEffect #2 — auto-scroll when messages change (Lesson 6)
+// 5. handleSend(e):
 //      e.preventDefault()
 //      const text = newMessage.trim(); if (!text) return
-//      insert (Lesson 2); if error → setError; else setNewMessage('')
-//      ⚠ DON'T add the message to state here — the realtime listener does it,
-//        otherwise you'll see your own message twice.
-// 7. JSX (match chat.svg):
+//      try { addDoc (Lesson 2); setNewMessage('') } catch (err) { setError(err.message) }
+//      ⚠ DON'T add the message to state here — onSnapshot already does it.
+// 6. JSX (match chat.svg):
 //      <div className="mx-auto flex h-[calc(100vh-4rem)] max-w-3xl flex-col p-4">
 //        header card: "Community Chat" + small green dot "Live"
 //        <div className="flex-1 space-y-3 overflow-y-auto rounded-xl bg-white p-4">
 //          loading / error / "No messages yet — say hi! 👋"
-//          messages.map → <MessageBubble key={m.id} message={m} isOwn={m.user_id === user.id} />
+//          messages.map → <MessageBubble key={m.id} message={m} isOwn={m.userId === user.uid} />
 //          <div ref={bottomRef} />
 //        </div>
 //        <form className="mt-3 flex gap-2"> input (flex-1) + orange Send button </form>
 //      </div>
 //   h-[calc(100vh-4rem)] = full screen height minus the 4rem (64px) navbar.
-// 8. export default ChatRoom
+// 7. export default ChatRoom
 //
 // HOW TO TEST
 //   Open the app in a normal window AND an incognito window, log in as two
 //   different users, chat. Messages must appear on both without refreshing.
 //
-// IF REALTIME DOESN'T WORK
-//   - Did you run `alter publication supabase_realtime add table messages;`?
-//   - Supabase dashboard → Database → Publications → supabase_realtime → messages ON
-//   - Is there a SELECT policy? Realtime only sends rows you're allowed to read.
+// IF IT DOESN'T WORK
+//   - "Missing or insufficient permissions" → publish your firestore.rules
+//     (Firebase console → Firestore Database → Rules → Publish)
+//   - Nothing shows at all → did you create the Firestore database?
+//   - Check Firestore Database → Data: is there a `messages` collection?
 //
 // ✍️ WRITE YOUR CODE BELOW
 // ---------------------------------------------------------------------

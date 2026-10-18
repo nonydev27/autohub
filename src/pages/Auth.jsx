@@ -5,7 +5,7 @@
 // WHAT THIS FILE DOES
 // -------------------
 // One card with an email + password form. A toggle switches between
-// "Log In" and "Sign Up" mode. On success, Supabase stores the session,
+// "Log In" and "Sign Up" mode. On success, Firebase remembers the login,
 // AuthContext notices, and App.jsx redirects to /chat automatically.
 //
 // ---------------------------------------------------------------------
@@ -33,20 +33,33 @@
 //   </form>
 //
 // ---------------------------------------------------------------------
-// LESSON 3 — async / await and Supabase's { data, error } pattern
+// LESSON 3 — async / await and try / catch
 // ---------------------------------------------------------------------
 // Network calls take time. `await` pauses the function until it finishes.
-// Supabase never throws for normal failures; it RETURNS an error:
+// Firebase THROWS an error when something goes wrong, so wrap it in try/catch:
 //
-//   const { data, error } = await supabase.auth.signInWithPassword({
-//     email: 'me@test.com',
-//     password: 'secret123',
-//   })
-//   if (error) {
-//     console.log(error.message)   // e.g. "Invalid login credentials"
+//   import { signInWithEmailAndPassword } from 'firebase/auth'
+//
+//   try {
+//     await signInWithEmailAndPassword(auth, 'me@test.com', 'secret123')
+//     // success → onAuthStateChanged in AuthContext fires by itself
+//   } catch (err) {
+//     console.log(err.code)      // e.g. "auth/invalid-credential"
+//     console.log(err.message)   // "Firebase: Error (auth/invalid-credential)."
 //   }
 //
-//   signUp takes the exact same shape: supabase.auth.signUp({ email, password })
+//   Sign up has the same shape:
+//     createUserWithEmailAndPassword(auth, email, password)
+//
+// err.message is ugly, so turn the common codes into friendly text:
+//   const messages = {
+//     'auth/invalid-credential': 'Wrong email or password',
+//     'auth/email-already-in-use': 'That email already has an account',
+//     'auth/weak-password': 'Password must be at least 6 characters',
+//     'auth/invalid-email': 'That email address looks wrong',
+//   }
+//   setError(messages[err.code] ?? err.message)
+//   ↑ `??` = "if the left side is undefined, use the right side"
 //
 // ---------------------------------------------------------------------
 // LESSON 4 — Loading flags & toggles
@@ -71,8 +84,11 @@
 //       e.preventDefault()
 //       setLoading(true)
 //       setError('')
-//       const { error } = await supabase.from('subscribers').insert({ email })
-//       if (error) setError(error.message)
+//       try {
+//         await addDoc(collection(db, 'subscribers'), { email })
+//       } catch (err) {
+//         setError(err.message)
+//       }
 //       setLoading(false)
 //     }
 //
@@ -94,12 +110,16 @@
 // ---------------------------------------------------------------------
 // STEPS FOR YOUR VERSION
 // ---------------------------------------------------------------------
-// 1. Imports: useState, { supabase }, { Car } from 'lucide-react'
+// 1. Imports: useState, { auth } from '../firebase',
+//             { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth',
+//             { Car } from 'lucide-react'
 // 2. State: email, password, isSignUp (false), error (''), loading (false)
 // 3. handleSubmit:
 //      preventDefault → loading on, error cleared
-//      const { error } = isSignUp ? await signUp(...) : await signInWithPassword(...)
-//      if error → setError(error.message)
+//      try {
+//        if (isSignUp) await createUserWithEmailAndPassword(auth, email, password)
+//        else          await signInWithEmailAndPassword(auth, email, password)
+//      } catch (err) → setError(friendly message, Lesson 3)
 //      loading off
 // 4. JSX (match the mockup):
 //      <div className="flex min-h-screen items-center justify-center p-4">
@@ -111,8 +131,9 @@
 // 5. export default Auth
 //
 // HOW TO TEST
-//   Sign up with a fake email (e.g. test1@test.com). Check Supabase →
-//   Authentication → Users. If nothing happens, did you disable "Confirm email"?
+//   Sign up with a fake email (e.g. test1@test.com). Check Firebase console →
+//   Authentication → Users. If you get "auth/operation-not-allowed", you
+//   haven't enabled the Email/Password sign-in method yet.
 //
 // ✍️ WRITE YOUR CODE BELOW
 // ---------------------------------------------------------------------

@@ -93,4 +93,18 @@
 
 import { NavLink } from "react-router-dom";
 import { Car, MessageCircle, Newspaper, LogOut } from "lucide-react";
+import { useAuth } from '../context/AuthContext'
+
+function Navbar(){
+    const {user,signOut} = useAuth()
+
+    return(
+        <nav>
+            
+        </nav>
+    )
+}
+
+export default Navbar()
+
 

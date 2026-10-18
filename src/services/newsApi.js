@@ -20,8 +20,9 @@
 //   }
 //   const data = await response.json()        // turn the body into a JS object
 //
-//   Unlike Supabase, fetch does NOT give you { data, error }. You check
-//   response.ok yourself and `throw` — the page will `catch` it.
+//   Unlike Firebase, fetch does NOT throw on a 401/404/500 — it only throws
+//   if the network is down. So check response.ok yourself and `throw` —
+//   the page will `catch` it.
 //
 // ---------------------------------------------------------------------
 // LESSON 2 — Building a URL with query parameters

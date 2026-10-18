@@ -1,6 +1,6 @@
 # AutoHub — The Tutor 🎓
 
-This guide explains **everything** about the project: what you're building, how the pieces fit, what each file does, and the React/Supabase ideas you need. Read sections 1–4 once before you start, then use the rest as a reference while you code.
+This guide explains **everything** about the project: what you're building, how the pieces fit, what each file does, and the React/Firebase ideas you need. Read sections 1–4 once before you start, then use the rest as a reference while you code.
 
 > Checklist of what to do, in order → `docs/TODO.md`
 > Detailed lessons + examples for each file → the comments at the top of that file
@@ -14,8 +14,8 @@ This guide explains **everything** about the project: what you're building, how 
 
 | Feature | What the user sees | What powers it |
 |---|---|---|
-| Sign up / Log in | Email + password form | Supabase Auth |
-| Community chat | Messages appear instantly for everyone | Supabase Database + Realtime |
+| Sign up / Log in | Email + password form | Firebase Authentication |
+| Community chat | Messages appear instantly for everyone | Cloud Firestore (`onSnapshot` listeners) |
 | Daily news | Grid of the latest automotive articles | GNews API |
 
 The tech:
@@ -23,7 +23,7 @@ The tech:
 - **React**: builds the UI out of components
 - **Vite**: the dev server and build tool (`npm run dev`)
 - **React Router**: switches pages without reloading
-- **Supabase**: a hosted backend. You get a Postgres database, login system and live updates without writing a server.
+- **Firebase** (by Google, free Spark plan): a hosted backend. You get a login system and a database with live updates (Firestore) without writing a server.
 - **Tailwind CSS**: you style elements by adding classes like `bg-white p-4 rounded-xl`
 - **lucide-react**: icon components (`<Car />`, `<Send />`)
 
@@ -43,33 +43,33 @@ The tech:
                     │                              │                  └─ /news  NewsFeed ──► NewsCard
                     └──────────────────────────────┼──────────────────────┼──────┼────────────┘
                                                    │                      │      │
-                                         supabaseClient.js ◄──────────────┘  newsApi.js
+                                            firebase.js ◄─────────────────┘  newsApi.js
                                                    │                             │
                                           ┌────────▼────────┐             ┌──────▼──────┐
-                                          │    SUPABASE     │             │  GNews API  │
-                                          │ Auth · Database │             │  (articles) │
-                                          │    · Realtime   │             └─────────────┘
+                                          │    FIREBASE     │             │  GNews API  │
+                                          │  Auth · Cloud   │             │  (articles) │
+                                          │    Firestore    │             └─────────────┘
                                           └─────────────────┘
 ```
 
 **How a chat message travels:**
 
 ```
-You type "hello" → handleSend() → supabase.from('messages').insert(...)
-      → Supabase saves the row → Realtime broadcasts "new row!"
-      → every open ChatRoom (yours too) receives payload.new
-      → setMessages(prev => [...prev, payload.new]) → bubble appears
+You type "hello" → handleSend() → addDoc(collection(db, 'messages'), {...})
+      → Firestore saves the document → notifies every onSnapshot listener
+      → every open ChatRoom (yours too) receives the updated list
+      → setMessages(list) → bubble appears
 ```
 
 **How login works:**
 
 ```
-Auth.jsx calls signInWithPassword → Supabase returns a session (saved in localStorage)
-      → onAuthStateChange fires in AuthContext → session state updates
+Auth.jsx calls signInWithEmailAndPassword → Firebase saves the login in the browser
+      → onAuthStateChanged fires in AuthContext → user state updates
       → App.jsx re-renders: user exists → Navbar shows, /auth redirects to /chat
 ```
 
-After a page refresh, `getSession()` reads the saved session, so you stay logged in.
+After a page refresh, `onAuthStateChanged` fires again with the saved user, so you stay logged in.
 
 ---
 
@@ -84,13 +84,12 @@ autohub/
 ├── docs/
 │   ├── TODO.md             Step-by-step checklist
 │   └── TUTOR.md            This file
-├── supabase/
-│   └── schema.sql          Database setup SQL (run in Supabase dashboard)
+├── firestore.rules         Database security rules (paste into Firebase console)
 └── src/
     ├── main.jsx            Entry point: wraps App in Router + AuthProvider
     ├── App.jsx             Routes: which URL shows which page
     ├── index.css           Global CSS (just the Tailwind import)
-    ├── supabaseClient.js   Creates the one Supabase connection
+    ├── firebase.js         Connects to Firebase once; exports auth + db
     ├── context/
     │   └── AuthContext.jsx Tracks the logged-in user; exposes useAuth()
     ├── services/
@@ -113,21 +112,21 @@ autohub/
 
 | File | Job | Depends on | Used by |
 |---|---|---|---|
-| `supabaseClient.js` | Connect to Supabase once | `.env.local` | AuthContext, Auth, ChatRoom |
-| `AuthContext.jsx` | Hold `user`, offer `signOut`, provide `useAuth()` | supabaseClient | main.jsx, App, Navbar, ProtectedRoute, ChatRoom |
+| `firebase.js` | Connect to Firebase once | `.env.local` | AuthContext, Auth, ChatRoom |
+| `AuthContext.jsx` | Hold `user`, offer `signOut`, provide `useAuth()` | firebase.js | main.jsx, App, Navbar, ProtectedRoute, ChatRoom |
 | `main.jsx` | Start React, wrap with providers | AuthContext, App | index.html |
 | `App.jsx` | Routing + show Navbar when logged in | all pages, Navbar, ProtectedRoute | main.jsx |
 | `ProtectedRoute.jsx` | Block pages if logged out | useAuth | App |
-| `Auth.jsx` | Sign up / log in | supabaseClient | App |
+| `Auth.jsx` | Sign up / log in | firebase.js | App |
 | `Navbar.jsx` | Navigation + logout | useAuth, NavLink | App |
-| `ChatRoom.jsx` | Load, listen, send messages | supabaseClient, useAuth, MessageBubble | App |
+| `ChatRoom.jsx` | Listen, send messages | firebase.js, useAuth, MessageBubble | App |
 | `MessageBubble.jsx` | Draw one message | (props only) | ChatRoom |
 | `newsApi.js` | Fetch articles | `.env.local` | NewsFeed |
 | `NewsFeed.jsx` | Load + show articles | newsApi, NewsCard | App |
 | `NewsCard.jsx` | Draw one article | (props only) | NewsFeed |
 
 **Build order** (each one only depends on things above it):
-`supabaseClient → AuthContext → main.jsx → ProtectedRoute → Auth → App → Navbar → MessageBubble → ChatRoom → newsApi → NewsCard → NewsFeed`
+`firebase.js → AuthContext → main.jsx → ProtectedRoute → Auth → App → Navbar → MessageBubble → ChatRoom → newsApi → NewsCard → NewsFeed`
 
 ---
 
@@ -178,7 +177,7 @@ useEffect(() => {
 }, [])   // [] = once · [x] = whenever x changes · no array = every render (avoid)
 ```
 
-You'll use effects to fetch data, subscribe to realtime/auth changes, and auto-scroll.
+You'll use effects to fetch data, listen to Firestore/auth changes, and auto-scroll.
 
 ### 4.5 Refs: grab a DOM element
 
@@ -202,7 +201,7 @@ Your `useAuth()` is just a nice wrapper around `useContext(AuthContext)`.
 {items.map(item => <Row key={item.id} item={item} />)}
 ```
 
-`key` must be unique and stable, so use the database id or the article url.
+`key` must be unique and stable, so use the document id or the article url.
 
 ### 4.8 Events & forms
 
@@ -227,7 +226,7 @@ async function load() {
   try {
     const res = await fetch(url)   // wait for the network
     const data = await res.json()
-  } catch (err) {
+  } catch (err) {                  // Firebase calls also throw → same try/catch
     console.log(err.message)
   }
 }
@@ -237,42 +236,52 @@ async function load() {
 
 ---
 
-## 5. Supabase explained
+## 5. Firebase explained
 
-### 5.1 What you get
-- **Auth**: stores users and handles passwords and sessions. You call `supabase.auth.*`.
-- **Database**: a real Postgres database. You call `supabase.from('table').select/insert/...`.
-- **Realtime**: pushes database changes to the browser through `supabase.channel(...)`.
+### 5.1 What you get (all free on the Spark plan)
+- **Authentication**: stores users and handles passwords and logins. Functions from `firebase/auth`.
+- **Cloud Firestore**: a NoSQL database of *collections* and *documents*. Functions from `firebase/firestore`.
+- **Realtime**: built into Firestore. `onSnapshot(query, callback)` re-runs your callback whenever the data changes.
 
-### 5.2 The `{ data, error }` pattern
-Every Supabase call returns an object. It doesn't throw:
+Free limits are far more than this project needs (Firestore: 50,000 reads and 20,000 writes per day).
+
+### 5.2 Errors are thrown, so use try / catch
 ```js
-const { data, error } = await supabase.from('messages').select('*')
-if (error) { /* show error.message */ }
+try {
+  await addDoc(collection(db, 'messages'), { ... })
+} catch (err) {
+  console.log(err.code, err.message)   // e.g. "permission-denied"
+}
 ```
+Auth errors have codes like `auth/invalid-credential`, `auth/email-already-in-use`, `auth/weak-password`.
 
-### 5.3 The `messages` table
+### 5.3 The `messages` collection
 
-| column | type | meaning |
+No setup needed: the collection appears when the first message is added. Each document:
+
+| field | type | meaning |
 |---|---|---|
-| id | uuid | unique id (auto) |
-| content | text | the message |
-| user_id | uuid | who sent it (links to auth.users) |
-| user_email | text | shown in the bubble |
-| created_at | timestamptz | when (auto) |
+| (doc id) | string | unique id (auto, read it as `doc.id`) |
+| content | string | the message |
+| userId | string | who sent it (`user.uid`) |
+| userEmail | string | shown in the bubble |
+| createdAt | timestamp | when (`serverTimestamp()`); `null` for a split second after you send |
 
-### 5.4 Row Level Security (RLS): why it matters
-Your anon key is visible to anyone who opens DevTools. RLS rules make that safe:
-- **SELECT policy**: only logged-in users can read messages.
-- **INSERT policy**: you can only insert rows where `user_id` is **your** id (`auth.uid() = user_id`), so nobody can post as someone else.
+⚠ Firebase users have **`uid`**, not `id`.
 
-RLS also affects realtime. Supabase only sends you new rows you're allowed to SELECT.
+### 5.4 Security Rules: why they matter
+Your Firebase config (including `apiKey`) is visible to anyone who opens DevTools. That's fine, because rules control access:
+- **read**: only logged-in users (`request.auth != null`).
+- **create**: only if `request.resource.data.userId == request.auth.uid`, so nobody can post as someone else.
+- **update / delete**: nobody.
 
-### 5.5 Dashboard settings you must change
-1. **Authentication → Providers → Email → Confirm email: OFF** (for testing)
-2. **SQL Editor**: run your `supabase/schema.sql`
-3. **Database → Publications → supabase_realtime**: `messages` must be ON
-4. Later, when you deploy: **Authentication → URL Configuration**, add your live URL
+Rules also apply to `onSnapshot`. You only get documents you're allowed to read.
+
+### 5.5 Console settings you must change
+1. **Authentication → Sign-in method → Email/Password: Enable**
+2. **Firestore Database → Create database** (production mode)
+3. **Firestore Database → Rules**: paste your `firestore.rules`, click **Publish**
+4. Later, when you deploy: **Authentication → Settings → Authorized domains**, add your live domain
 
 ---
 
@@ -362,9 +371,9 @@ The **purple notes** on the mockups name the file and suggest Tailwind classes. 
 ## 9. Testing as you go
 
 - **Browser console (F12 → Console):** use `console.log(x)` everywhere while learning. Errors show here in red.
-- **Network tab:** see every request to Supabase or GNews and its response.
+- **Network tab:** see every request to Firebase or GNews and its response.
 - **Two users:** test chat with a normal window and an incognito window.
-- **Supabase Table Editor:** check that rows actually got inserted.
+- **Firestore Database → Data:** check that documents actually got added.
 - `npm run lint`: finds mistakes such as unused variables and missing effect dependencies.
 - `npm run build`: if this passes, you can deploy.
 
@@ -375,14 +384,17 @@ The **purple notes** on the mockups name the file and suggest Tailwind classes. 
 | Error / symptom | Cause | Fix |
 |---|---|---|
 | Blank white page | JS error | Open the console and read the red error |
-| `supabaseUrl is required` | env vars missing | `.env.local` in the project root, names start with `VITE_`, restart `npm run dev` |
+| `auth/invalid-api-key` | env vars missing | `.env.local` in the project root, names start with `VITE_`, restart `npm run dev` |
 | `useAuth()` returns undefined / can't destructure | No provider | Wrap `<App />` in `<AuthProvider>` in main.jsx |
 | `useNavigate/NavLink may be used only in the context of a <Router>` | No router | Wrap in `<BrowserRouter>` in main.jsx |
-| `new row violates row-level security policy` | Missing INSERT policy or wrong user_id | Check schema.sql step 2, insert `user_id: user.id` |
-| Messages only show after refresh | Realtime not enabled | `alter publication supabase_realtime add table messages;` |
-| My message appears twice | You added it to state AND realtime added it | Remove the manual `setMessages` in handleSend |
-| Every message appears twice | Subscribed twice without cleanup | Return `() => supabase.removeChannel(channel)` from the effect |
-| Sign-up "works" but can't log in | Email confirmation on | Turn off Confirm email in Supabase |
+| `auth/operation-not-allowed` | Email/Password sign-in not enabled | Authentication → Sign-in method → Email/Password → Enable |
+| `auth/invalid-credential` | Wrong email or password | Show a friendly error (see Auth.jsx Lesson 3) |
+| `Missing or insufficient permissions` | Rules not published, or wrong userId | Publish `firestore.rules`; save `userId: user.uid` |
+| My messages show as someone else's | Compared `user.id` (undefined) | Use `m.userId === user.uid` |
+| Crash: `Cannot read properties of null (reading 'toDate')` | `createdAt` is null right after sending | `message.createdAt?.toDate()` |
+| Every message appears twice | Added it to state yourself as well | Remove the manual `setMessages` in handleSend; onSnapshot does it |
+| Listener keeps firing after leaving the page | No cleanup | `return unsubscribe` from the effect |
+| Login fails only on the deployed site (`auth/unauthorized-domain`) | Domain not allowed | Authentication → Settings → Authorized domains |
 | News: 401/403 | Bad/missing API key | Check `VITE_GNEWS_API_KEY`, restart dev server |
 | News: 429 | Daily limit hit | Use fake data until tomorrow |
 | Page reloads on submit | Forgot `e.preventDefault()` | Add it first thing in handleSubmit |
@@ -401,9 +413,10 @@ The **purple notes** on the mockups name the file and suggest Tailwind classes. 
 - **Effect**: code that runs after render (fetching, subscribing).
 - **Context / Provider**: a way to share values with all components inside the provider.
 - **Route**: a URL → page mapping.
-- **Session**: proof you're logged in (a token Supabase stores for you).
-- **RLS / Policy**: database rules about who can read/write which rows.
-- **Channel / Subscription**: a live connection that tells you when data changes.
+- **Session / login state**: proof you're logged in (Firebase stores it in the browser for you).
+- **Collection / Document**: Firestore's version of a table / row.
+- **Security Rules**: database rules about who can read/write which documents.
+- **Listener / Snapshot**: a live connection (`onSnapshot`) that tells you when data changes; a snapshot is the data at that moment.
 - **Env var**: a config value read from `.env.local`.
 - **Promise / async / await**: how JavaScript handles things that take time.
 - **MVP**: Minimum Viable Product, the smallest version that works end to end.
@@ -412,6 +425,6 @@ The **purple notes** on the mockups name the file and suggest Tailwind classes. 
 
 ## 12. How to explain this project in your demo (30 seconds)
 
-> "AutoHub is a React app for mechanics and car enthusiasts. Users sign up with Supabase Auth, then join a community chat that updates in real time through Supabase Realtime subscriptions on a Postgres table protected by row-level security. There's also a daily news page that pulls the latest automotive articles from the GNews API. It's built with Vite, React Router and Tailwind, and deployed on Vercel."
+> "AutoHub is a React app for mechanics and car enthusiasts. Users sign up with Firebase Authentication, then join a community chat that updates in real time through Firestore snapshot listeners, with Security Rules making sure only logged-in users can read and nobody can post as someone else. There's also a daily news page that pulls the latest automotive articles from the GNews API. It's built with Vite, React Router and Tailwind, and deployed on Vercel."
 
-Be ready to explain: **how realtime works** (section 2), **why RLS matters** (5.4), and **what useEffect cleanup does** (4.4). Those are the questions interviewers and supervisors usually ask.
+Be ready to explain: **how realtime works** (section 2), **why Security Rules matter** (5.4), and **what useEffect cleanup does** (4.4). Those are the questions interviewers and supervisors usually ask.

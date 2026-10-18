@@ -69,45 +69,49 @@
 //   <ThemeProvider><App /></ThemeProvider>   → children is <App />
 //
 // ---------------------------------------------------------------------
-// LESSON 4 — The two Supabase auth calls you need here
+// LESSON 4 — The two Firebase auth calls you need here
 // ---------------------------------------------------------------------
-//   // 1. "Is someone already logged in?" (Supabase saves sessions in localStorage)
-//   const { data } = await supabase.auth.getSession()
-//   data.session          // null if logged out, an object if logged in
-//   data.session.user     // { id, email, ... }
+//   import { onAuthStateChanged, signOut } from 'firebase/auth'
 //
-//   // 2. "Tell me whenever login state changes" (login, logout, token refresh)
-//   const { data } = supabase.auth.onAuthStateChange((event, session) => {
-//     console.log(event)  // 'SIGNED_IN', 'SIGNED_OUT', ...
+//   // 1. "Tell me who's logged in — now AND whenever it changes"
+//   //    Firebase saves the login in the browser, so after a refresh it
+//   //    calls this right away with the saved user (or null).
+//   const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+//     console.log(firebaseUser)   // null if logged out, else { uid, email, ... }
 //   })
-//   data.subscription.unsubscribe()   // call this in your useEffect cleanup
+//   unsubscribe()                 // call this in your useEffect cleanup
 //
-// Note: you can't make the useEffect function itself `async`. Either use
-// .then():
-//     supabase.auth.getSession().then(({ data }) => { ... })
-// or define an async function inside the effect and call it.
+//   // 2. Log out
+//   signOut(auth)
+//
+// ⚠ Firebase users have `uid`, not `id`:   user.uid   user.email
+//
+// The FIRST time onAuthStateChanged fires, Firebase has finished checking
+// for a saved login. That's the moment to set loading to false.
 //
 // ---------------------------------------------------------------------
 // STEPS FOR YOUR VERSION
 // ---------------------------------------------------------------------
 // 1. Imports: createContext, useContext, useEffect, useState from 'react'
-//             { supabase } from '../supabaseClient'
+//             { onAuthStateChanged, signOut } from 'firebase/auth'
+//             { auth } from '../firebase'
 // 2. const AuthContext = createContext(null)
 // 3. export function AuthProvider({ children }) {
-//      - state: session (null), loading (true)
+//      - state: user (null), loading (true)
 //      - useEffect (empty deps []):
-//          • getSession() → setSession(data.session); setLoading(false)
-//          • onAuthStateChange((_event, session) => setSession(session))
-//          • return cleanup → subscription.unsubscribe()
-//      - const signOut = () => supabase.auth.signOut()
-//      - const value = { session, user: session?.user ?? null, signOut }
+//          • const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+//              setUser(firebaseUser); setLoading(false)
+//            })
+//          • return unsubscribe        ← it IS the cleanup function
+//      - const logout = () => signOut(auth)
+//      - const value = { user, signOut: logout }
 //      - if (loading) return a centered "Loading..." <div>
 //      - otherwise return the Provider wrapping {children}
 //    }
 // 4. export function useAuth() { return useContext(AuthContext) }
 //
-//   `session?.user` → "optional chaining": gives undefined instead of crashing
-//   when session is null. `?? null` turns undefined into null.
+//   Why `logout` and not `signOut`? The name signOut is already taken by
+//   the Firebase import. Other files still call it as `signOut` from useAuth().
 //
 // HOW TO TEST
 //   In App.jsx temporarily do:  const { user } = useAuth(); console.log(user)

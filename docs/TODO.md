@@ -9,7 +9,8 @@ Read `docs/TUTOR.md` sections 1–4 first. Designs to copy: `src/assets/mockups/
 ## Phase 0 — Setup (≈ 45 min)
 
 - [x] Scaffold Vite + React project
-- [x] Install `@supabase/supabase-js`, `react-router-dom`, `lucide-react`
+- [x] Install `react-router-dom`, `lucide-react`
+- [x] Install `firebase` (replaced Supabase)
 - [ ] Install Tailwind CSS (v4, Vite plugin):
   - `npm install tailwindcss @tailwindcss/vite`
   - In `vite.config.js`: import `tailwindcss` from `@tailwindcss/vite` and add `tailwindcss()` to the `plugins` array
@@ -18,17 +19,20 @@ Read `docs/TUTOR.md` sections 1–4 first. Designs to copy: `src/assets/mockups/
 - [ ] Delete the demo images you won't use (`src/assets/hero.png`, `react.svg`, `vite.svg`)
 - [ ] Copy `.env.example` → `.env.local` (it's already git-ignored, never commit it)
 
-## Phase 1 — Supabase (≈ 45 min)
+## Phase 1 — Firebase (≈ 45 min)
 
-- [ ] Create a free project at https://supabase.com
-- [ ] **Project Settings → API**: copy the Project URL and the `anon` public key into `.env.local`
-- [ ] **Authentication → Providers → Email**: turn OFF "Confirm email" (saves you time while testing)
-- [ ] **SQL Editor**: write and run the SQL described in `supabase/schema.sql`
-  - messages table
-  - Row Level Security (RLS) policies
-  - add the table to the realtime publication
-- [ ] **Table Editor**: check that the `messages` table exists and RLS is ON
-- [ ] Write `src/supabaseClient.js`
+Free "Spark" plan, no credit card needed.
+
+- [ ] Go to https://console.firebase.google.com → **Create a project** (name it `autohub`; Google Analytics can be OFF)
+- [ ] Project overview → click the **Web icon `</>`** → register an app (no need for Firebase Hosting)
+  - copy the six values from the `firebaseConfig` it shows into `.env.local`
+  - lost it? **Project settings (gear) → General → Your apps → SDK setup and configuration → Config**
+- [ ] **Build → Authentication → Get started → Sign-in method → Email/Password → Enable** (only the first switch, not "Email link")
+- [ ] **Build → Firestore Database → Create database**
+  - pick a location close to you (can't be changed later)
+  - choose **production mode** (everything locked until you write rules)
+- [ ] Write the rules described in `firestore.rules`, paste them into **Firestore Database → Rules** → **Publish**
+- [ ] Write `src/firebase.js`
 
 ## Phase 2 — Auth (≈ 1.5 h)
 
@@ -37,7 +41,7 @@ Read `docs/TUTOR.md` sections 1–4 first. Designs to copy: `src/assets/mockups/
 - [ ] `src/pages/Auth.jsx` — sign up / log in form
 - [ ] `src/components/ProtectedRoute.jsx` — bounce logged-out users to `/auth`
 - [ ] `src/App.jsx` — set up the routes
-- [ ] ✅ Test: sign up a new user → see them in Supabase **Authentication → Users**
+- [ ] ✅ Test: sign up a new user → see them in Firebase console **Authentication → Users**
 - [ ] ✅ Test: log out, log back in, refresh page — you should stay logged in
 
 ## Phase 3 — Navbar (≈ 30 min)
@@ -49,10 +53,10 @@ Read `docs/TUTOR.md` sections 1–4 first. Designs to copy: `src/assets/mockups/
 
 - [ ] `src/components/MessageBubble.jsx` — one chat message
 - [ ] `src/pages/ChatRoom.jsx`
-  - [ ] load old messages on mount
-  - [ ] subscribe to new INSERTs (realtime) + clean up on unmount
+  - [ ] listen to the `messages` collection with `onSnapshot` (loads history AND live updates) + unsubscribe on unmount
   - [ ] send-message form
   - [ ] auto-scroll to the bottom
+- [ ] ✅ Test: check **Firestore Database → Data** — your messages appear as documents
 - [ ] ✅ Test: open the app in TWO browsers (e.g. normal + incognito) with two users and chat between them. Messages must appear without refreshing.
 
 ## Phase 5 — News feed (≈ 1.5 h)
@@ -80,7 +84,7 @@ Read `docs/TUTOR.md` sections 1–4 first. Designs to copy: `src/assets/mockups/
 - [ ] Deploy to Vercel or Netlify (import the GitHub repo, framework = Vite)
   - Add the same env variables from `.env.local` in the hosting dashboard
   - Add a rewrite so refreshing `/chat` doesn't 404 (Vercel: `vercel.json` rewrites; Netlify: `public/_redirects` with `/* /index.html 200`)
-- [ ] Supabase **Authentication → URL Configuration**: add your deployed URL
+- [ ] Firebase **Authentication → Settings → Authorized domains → Add domain**: add your deployed domain (e.g. `autohub.vercel.app`)
 - [ ] Update `README.md` with live link + screenshots
 - [ ] Commit & push
 
@@ -95,7 +99,7 @@ Read `docs/TUTOR.md` sections 1–4 first. Designs to copy: `src/assets/mockups/
 **Never cut:** auth, real-time chat, news list. Those are the deliverable.
 
 ## Stretch goals (only if you finish early)
-- Usernames / profiles table instead of showing emails
-- Multiple chat rooms (add a `room` column to `messages`)
+- Usernames / a `users` collection instead of showing emails
+- Multiple chat rooms (add a `room` field to messages and filter with `where('room', '==', ...)`)
 - Search box on the news page (change the `q` query)
-- Typing indicator using Supabase Presence
+- Typing indicator (a `typing/{uid}` document you set/delete while typing, listened to with `onSnapshot`)

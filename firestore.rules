@@ -1,0 +1,52 @@
+// =====================================================================
+// FILE: firestore.rules
+// Paste into Firebase console → Firestore Database → Rules → Publish (after writing it).
+// This file is NOT used by the React app; it's a record of your database rules.
+// =====================================================================
+//
+// LESSON 1 — Firestore has no tables, it has COLLECTIONS of DOCUMENTS
+//   collection "messages"            ≈ a table
+//     document "aB3x..." (auto id)   ≈ a row
+//       { content: "hi", userId: "...", userEmail: "...", createdAt: <timestamp> }
+//   You don't create the collection beforehand: it appears the first time
+//   your app adds a document to it. So there's no "create table" step.
+//
+// LESSON 2 — Security Rules
+//   Your Firebase config is public, so ANYONE could talk to your database.
+//   Rules decide who may read/write which documents.
+//   If you created the database in "production mode", everything is
+//   blocked until you write rules.
+//
+//   rules_version = '2';
+//   service cloud.firestore {
+//     match /databases/{database}/documents {
+//
+//       match /notes/{noteId} {                       // every doc in "notes"
+//         allow read: if request.auth != null;        // only logged-in users
+//
+//         allow create: if request.auth != null
+//           && request.resource.data.ownerId == request.auth.uid;  // can't pretend to be someone else
+//
+//         allow update, delete: if false;             // nobody can edit/delete
+//       }
+//     }
+//   }
+//
+//   request.auth            = the logged-in user (null if logged out)
+//   request.auth.uid        = their id
+//   request.resource.data   = the document they are trying to save
+//
+// LESSON 3 — Realtime
+//   Nothing to switch on! Every Firestore query can be "listened to" with
+//   onSnapshot (see ChatRoom.jsx). Rules apply to listeners too: you only
+//   receive documents your `read` rule allows.
+//
+// ---------------------------------------------------------------------
+// YOUR VERSION: same shape for a collection called `messages`. Documents have
+//   content (string), userId (string), userEmail (string), createdAt (timestamp)
+//   - read: logged-in users only
+//   - create: logged-in AND request.resource.data.userId == request.auth.uid
+//     (bonus: content is a string, size() > 0 and <= 1000)
+//   - update, delete: nobody
+// ---------------------------------------------------------------------
+
