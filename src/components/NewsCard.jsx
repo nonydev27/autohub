@@ -1,117 +1,42 @@
-// =====================================================================
-// FILE: src/components/NewsCard.jsx      MOCKUP: src/assets/mockups/news.svg
-// =====================================================================
-//
-// WHAT THIS FILE DOES
-//   Shows ONE article as a card: picture, title, short description,
-//   "Source · date", and a "Read more →" link that opens it in a new tab.
-//   Like MessageBubble, it just shows what it's given.
-//
-// HOW TO USE THIS FILE
-//   The finished code is at the bottom of this file. The PARTS below
-//   explain it piece by piece, line by line.
-//
-// ---------------------------------------------------------------------
-// PART 1 of 2 — Start the component and format the date
-// ---------------------------------------------------------------------
-//   function NewsCard({ article }) {
-//     const date = new Date(article.publishedAt).toLocaleDateString(undefined, {
-//       month: 'short',
-//       day: 'numeric',
-//     })
-//
-//   WHAT EACH LINE MEANS
-//   • `{ article }` is the prop NewsFeed passes in: <NewsCard article={a} />
-//   • article.publishedAt is text like "2026-10-18T09:00:00Z".
-//     new Date(...) turns it into a date, and toLocaleDateString(...)
-//     turns that into short text like "Oct 18".
-//     `undefined` means "use the visitor's language settings".
-//
-// ---------------------------------------------------------------------
-// PART 2 of 2 — What's shown
-// ---------------------------------------------------------------------
-//     return (
-//       <article className="flex flex-col overflow-hidden rounded-xl bg-white shadow-sm transition hover:shadow-lg">
-//         {article.image && (
-//           <img src={article.image} alt={article.title} className="h-44 w-full object-cover" />
-//         )}
-//
-//         <div className="flex flex-1 flex-col gap-2 p-4">
-//           <h3 className="line-clamp-2 font-semibold">{article.title}</h3>
-//           <p className="line-clamp-3 text-sm text-slate-500">{article.description}</p>
-//
-//           <div className="mt-auto flex items-center justify-between pt-2 text-xs text-slate-400">
-//             <span>
-//               {article.source?.name} · {date}
-//             </span>
-//             <a
-//               href={article.url}
-//               target="_blank"
-//               rel="noopener noreferrer"
-//               className="font-medium text-orange-600 hover:underline"
-//             >
-//               Read more →
-//             </a>
-//           </div>
-//         </div>
-//       </article>
-//     )
-//   }
-//
-//   export default NewsCard
-//
-//   WHAT EACH LINE MEANS
-//   • <article> is just a div with a meaningful name.
-//     overflow-hidden → the picture's corners get cut to the card's
-//     rounded corners. hover:shadow-lg → bigger shadow on mouse-over,
-//     `transition` animates it.
-//   • {article.image && <img ... />} → only show a picture IF the article
-//     has one (otherwise you'd get a broken-image icon).
-//     h-44 = 176px tall, w-full = full width,
-//     object-cover = fill the box without squashing (crops the edges).
-//     alt = text for screen readers or if the picture fails.
-//   • line-clamp-2 / line-clamp-3 → cut the text after 2 / 3 lines with "…"
-//     so all cards stay a similar size.
-//   • mt-auto on the footer pushes it to the BOTTOM of the card, so the
-//     footers line up even when titles are different lengths.
-//   • article.source?.name → the site's name (`?.` in case it's missing).
-//   • The link: href = where it goes. target="_blank" = new tab.
-//     rel="noopener noreferrer" = a safety rule whenever you use _blank.
-//     It's a normal <a>, not NavLink, because it goes to ANOTHER website.
-//
-// ✅ FINISHED CODE — this is the code from the parts above, put together.
-// ---------------------------------------------------------------------
+import { Clock } from 'lucide-react'
+import BookmarkButton from './BookmarkButton'
+import { timeAgo } from '../utils/format'
 
-function NewsCard({ article }) {
-  const date = new Date(article.publishedAt).toLocaleDateString(undefined, {
-    month: 'short',
-    day: 'numeric',
-  })
-
+function NewsCard({ article, onOpen, saved, onToggleSave }) {
   return (
-    <article className="flex flex-col overflow-hidden rounded-xl bg-white shadow-sm transition hover:shadow-lg">
-      {article.image && (
-        <img src={article.image} alt={article.title} className="h-44 w-full object-cover" />
-      )}
-
-      <div className="flex flex-1 flex-col gap-2 p-4">
-        <h3 className="line-clamp-2 font-semibold">{article.title}</h3>
-        <p className="line-clamp-3 text-sm text-slate-500">{article.description}</p>
-
-        <div className="mt-auto flex items-center justify-between pt-2 text-xs text-slate-400">
-          <span>
-            {article.source?.name} · {date}
+    <article className="group relative flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-zinc-900/60 transition hover:-translate-y-1 hover:border-orange-500/40 hover:shadow-2xl hover:shadow-orange-500/10">
+      <button type="button" onClick={onOpen} className="flex flex-1 flex-col text-left">
+        <div className="relative h-48 w-full overflow-hidden bg-zinc-800">
+          {article.image && (
+            <img
+              src={article.image}
+              alt=""
+              loading="lazy"
+              className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+            />
+          )}
+          <span className="absolute top-3 left-3 rounded-full bg-black/60 px-2.5 py-1 text-xs font-medium text-orange-300 backdrop-blur">
+            {article.category}
           </span>
-          <a
-            href={article.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-medium text-orange-600 hover:underline"
-          >
-            Read more →
-          </a>
         </div>
-      </div>
+
+        <div className="flex flex-1 flex-col gap-2 p-5">
+          <h3 className="line-clamp-2 font-display text-lg leading-snug font-semibold group-hover:text-orange-300">
+            {article.title}
+          </h3>
+          <p className="line-clamp-3 text-sm text-zinc-400">{article.description}</p>
+          <div className="mt-auto flex items-center gap-2 pt-3 text-xs text-zinc-500">
+            <span className="font-medium text-zinc-300">{article.source}</span>
+            <span>·</span>
+            <span>{timeAgo(article.publishedAt)}</span>
+            <span className="ml-auto flex items-center gap-1">
+              <Clock size={13} /> {article.readMinutes} min
+            </span>
+          </div>
+        </div>
+      </button>
+
+      <BookmarkButton saved={saved} onToggle={onToggleSave} className="absolute top-3 right-3" />
     </article>
   )
 }
