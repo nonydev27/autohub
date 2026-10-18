@@ -1,26 +1,51 @@
--- AutoHub database schema
--- Write the SQL below each comment, then paste the whole file into
--- Supabase → SQL Editor → New query → Run.
+-- =====================================================================
+-- FILE: supabase/schema.sql
+-- Paste into Supabase → SQL Editor → New query → Run (after writing it).
+-- This file is NOT used by the React app; it's a record of your database setup.
+-- =====================================================================
+--
+-- LESSON 1 — Creating a table
+--   create table notes (
+--     id uuid primary key default gen_random_uuid(),   -- unique id, auto-generated
+--     body text not null,                               -- text, required
+--     owner_id uuid not null references auth.users(id), -- must be a real user
+--     created_at timestamptz default now()              -- auto timestamp
+--   );
+--
+-- LESSON 2 — Row Level Security (RLS)
+--   The anon key is public, so ANYONE could talk to your database.
+--   RLS = rules that decide which rows each logged-in user may read/write.
+--   Once enabled, everything is blocked until you add policies.
+--
+--   alter table notes enable row level security;
+--
+--   create policy "Users can read notes"
+--     on notes for select
+--     to authenticated            -- only logged-in users
+--     using (true);               -- every row is readable
+--
+--   create policy "Users can add their own notes"
+--     on notes for insert
+--     to authenticated
+--     with check (auth.uid() = owner_id);   -- can't pretend to be someone else
+--
+--   auth.uid() = the id of the user making the request.
+--
+-- LESSON 3 — Realtime
+--   alter publication supabase_realtime add table notes;
+--   Without this, inserts still work but nobody gets notified live.
+--
+-- ---------------------------------------------------------------------
+-- YOUR VERSION: same three steps for a table called `messages` with columns
+--   id, content (text not null), user_id (uuid not null → auth.users),
+--   user_email (text), created_at
+-- ---------------------------------------------------------------------
 
--- 1. CREATE TABLE messages with these columns:
---    id          uuid, primary key, default gen_random_uuid()
---    content     text, not null
---    user_id     uuid, references auth.users(id), not null
---    user_email  text  (lets you show who sent a message without a profiles table)
---    created_at  timestamptz, default now()
+-- 1. create table messages
 
 
--- 2. Turn on Row Level Security for the messages table
---    (ALTER TABLE ... ENABLE ROW LEVEL SECURITY)
+-- 2. enable RLS + SELECT policy + INSERT policy (with check auth.uid() = user_id)
 
 
--- 3. Policy: logged-in users can READ all messages
---    (CREATE POLICY ... FOR SELECT TO authenticated USING (true))
+-- 3. add messages to the supabase_realtime publication
 
-
--- 4. Policy: logged-in users can INSERT only messages where user_id is themselves
---    (FOR INSERT TO authenticated WITH CHECK (auth.uid() = user_id))
-
-
--- 5. Add the table to realtime so the chat updates live
---    (ALTER PUBLICATION supabase_realtime ADD TABLE messages)

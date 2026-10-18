@@ -1,7 +1,8 @@
 # AutoHub — TODO (start → finish)
 
 Tick each box as you go. Time estimates assume ~10 hours total.
-Every file in `src/` already has comments telling you what to write in it.
+Every file in `src/` already has comments telling you what to write in it, with lessons and examples.
+Read `docs/TUTOR.md` sections 1–4 first. Designs to copy: `src/assets/mockups/*.svg`.
 
 ---
 
