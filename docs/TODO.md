@@ -1,7 +1,9 @@
 # AutoHub — TODO (start → finish)
 
 Tick each box as you go. Time estimates assume ~10 hours total.
-Every file in `src/` already has comments telling you what to write in it, with lessons and examples.
+Every file in `src/` shows you the **complete code**, cut into small PARTS, with what every line means.
+Read a part, then **type it yourself** at the bottom of the file (typing, not copy-pasting, is how it sticks). Test where you see 🧪.
+`Navbar.jsx` and `firestore.rules` are already filled in for you.
 Read `docs/TUTOR.md` sections 1–4 first. Designs to copy: `src/assets/mockups/*.svg`.
 
 ---
@@ -11,12 +13,12 @@ Read `docs/TUTOR.md` sections 1–4 first. Designs to copy: `src/assets/mockups/
 - [x] Scaffold Vite + React project
 - [x] Install `react-router-dom`, `lucide-react`
 - [x] Install `firebase` (replaced Supabase)
-- [ ] Install Tailwind CSS (v4, Vite plugin):
+- [x] Install Tailwind CSS (v4, Vite plugin):
   - `npm install tailwindcss @tailwindcss/vite`
   - In `vite.config.js`: import `tailwindcss` from `@tailwindcss/vite` and add `tailwindcss()` to the `plugins` array
   - In `src/index.css`: delete everything and put `@import "tailwindcss";` as the only line
-  - Delete `src/App.css` and its import (you'll use Tailwind classes instead)
-- [ ] Delete the demo images you won't use (`src/assets/hero.png`, `react.svg`, `vite.svg`)
+- [x] Delete the demo images you won't use (`src/assets/hero.png`, `react.svg`, `vite.svg`)
+- [ ] Delete the leftover `src/App.css` (nothing imports it any more)
 - [ ] Copy `.env.example` → `.env.local` (it's already git-ignored, never commit it)
 
 ## Phase 1 — Firebase (≈ 45 min)
@@ -31,7 +33,7 @@ Free "Spark" plan, no credit card needed.
 - [ ] **Build → Firestore Database → Create database**
   - pick a location close to you (can't be changed later)
   - choose **production mode** (everything locked until you write rules)
-- [ ] Write the rules described in `firestore.rules`, paste them into **Firestore Database → Rules** → **Publish**
+- [ ] Copy the rules from `firestore.rules` (already written for you) into **Firestore Database → Rules** → **Publish**
 - [ ] Write `src/firebase.js`
 
 ## Phase 2 — Auth (≈ 1.5 h)
@@ -46,7 +48,7 @@ Free "Spark" plan, no credit card needed.
 
 ## Phase 3 — Navbar (≈ 30 min)
 
-- [ ] `src/components/Navbar.jsx` — links to Chat & News, shows user email, logout button
+- [x] `src/components/Navbar.jsx` — links to Chat & News, shows user email, logout button (filled in; read through it)
 - [ ] ✅ Test: logout sends you back to `/auth`
 
 ## Phase 4 — Real-time chat (≈ 2.5 h) ← hardest part

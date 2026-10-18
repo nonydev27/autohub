@@ -3,7 +3,7 @@
 This guide explains **everything** about the project: what you're building, how the pieces fit, what each file does, and the React/Firebase ideas you need. Read sections 1–4 once before you start, then use the rest as a reference while you code.
 
 > Checklist of what to do, in order → `docs/TODO.md`
-> Detailed lessons + examples for each file → the comments at the top of that file
+> The complete code for each file, explained line by line → the comments at the top of that file (read a part, type it at the bottom)
 > What it should look like → `src/assets/mockups/` (open the `.svg` files in your browser)
 
 ---
@@ -388,7 +388,7 @@ The **purple notes** on the mockups name the file and suggest Tailwind classes. 
 | `useAuth()` returns undefined / can't destructure | No provider | Wrap `<App />` in `<AuthProvider>` in main.jsx |
 | `useNavigate/NavLink may be used only in the context of a <Router>` | No router | Wrap in `<BrowserRouter>` in main.jsx |
 | `auth/operation-not-allowed` | Email/Password sign-in not enabled | Authentication → Sign-in method → Email/Password → Enable |
-| `auth/invalid-credential` | Wrong email or password | Show a friendly error (see Auth.jsx Lesson 3) |
+| `auth/invalid-credential` | Wrong email or password | Show a friendly error (see Auth.jsx PART 2) |
 | `Missing or insufficient permissions` | Rules not published, or wrong userId | Publish `firestore.rules`; save `userId: user.uid` |
 | My messages show as someone else's | Compared `user.id` (undefined) | Use `m.userId === user.uid` |
 | Crash: `Cannot read properties of null (reading 'toDate')` | `createdAt` is null right after sending | `message.createdAt?.toDate()` |
