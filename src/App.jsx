@@ -3,89 +3,88 @@
 // =====================================================================
 //
 // WHAT THIS FILE DOES
-// -------------------
-// The "map" of the app: which URL shows which page.
-//   /auth → Auth page     /chat → ChatRoom     /news → NewsFeed
-// It also shows the Navbar on top when someone is logged in.
-// (The app shows a blank page / error until you write this — that's expected.)
+//   The "map" of the app: which web address shows which page.
+//     /auth → Auth page     /chat → ChatRoom     /news → NewsFeed
+//   It also shows the Navbar on top when someone is logged in.
+//   (The app shows a blank page / error until you write this. That's expected.)
+//
+// HOW TO USE THIS FILE
+//   The complete code is below, cut into PARTS. For each part: read the
+//   code, read what each line means, then TYPE it yourself at the bottom
+//   under ✍️.
+//
+// TIP: App.jsx imports ChatRoom and NewsFeed, which you write later. So
+// they don't break the app yet, give those files a tiny placeholder first:
+//     export default function ChatRoom() { return <p>Chat page</p> }
+//     export default function NewsFeed() { return <p>News page</p> }
+// (Replace them with the real code when you reach those files.)
 //
 // ---------------------------------------------------------------------
-// LESSON 1 — Components are functions that return JSX
+// PART 1 of 3 — Imports
 // ---------------------------------------------------------------------
-//   function Hello() {
-//     return <h1 className="text-2xl">Hello!</h1>
-//   }
-//   export default Hello
+//   import { Navigate, Route, Routes } from 'react-router-dom'
+//   import { useAuth } from './context/AuthContext'
+//   import Navbar from './components/Navbar'
+//   import ProtectedRoute from './components/ProtectedRoute'
+//   import Auth from './pages/Auth'
+//   import ChatRoom from './pages/ChatRoom'
+//   import NewsFeed from './pages/NewsFeed'
 //
-//   JSX looks like HTML but:  class → className,  and you can drop JS in
-//   with curly braces:  <p>{1 + 1}</p>  shows "2"
-//   A component must return ONE parent element. Use <>...</> (a Fragment)
-//   if you don't want an extra div.
-//
-// ---------------------------------------------------------------------
-// LESSON 2 — Routing with react-router-dom
-// ---------------------------------------------------------------------
-//   import { Routes, Route, Navigate } from 'react-router-dom'
-//
-//   <Routes>
-//     <Route path="/about"   element={<About />} />
-//     <Route path="/contact" element={<Contact />} />
-//     <Route path="/"        element={<Navigate to="/about" replace />} />   ← redirect
-//     <Route path="*"        element={<Navigate to="/" replace />} />        ← anything else
-//   </Routes>
-//
-//   Only ONE matching <Route> renders at a time. Things outside <Routes>
-//   (like a Navbar) always render.
+//   WHAT EACH LINE MEANS
+//   • Routes, Route → decide which page to show for each address
+//     Navigate      → sends you to another address
+//   • Notice the path starts with `./` (this folder), not `../`, because
+//     App.jsx is directly in src/.
+//   • Your own components are imported WITHOUT { } because each of those
+//     files uses `export default`.
 //
 // ---------------------------------------------------------------------
-// LESSON 3 — Conditional rendering
-// ---------------------------------------------------------------------
-//   {isLoggedIn && <Navbar />}                       → show only if true
-//   {isLoggedIn ? <Dashboard /> : <LoginPage />}     → pick one of two
-//
-// ---------------------------------------------------------------------
-// EXAMPLE — a small blog app's App.jsx (yours has the same shape)
+// PART 2 of 3 — Start the component
 // ---------------------------------------------------------------------
 //   function App() {
 //     const { user } = useAuth()
+//
+//   WHAT IT MEANS
+//   • Get the logged-in user (or null) from the noticeboard.
+//
+// ---------------------------------------------------------------------
+// PART 3 of 3 — What's shown
+// ---------------------------------------------------------------------
 //     return (
-//       <div className="min-h-screen bg-slate-100">
-//         {user && <Header />}
+//       <div className="min-h-screen bg-slate-100 text-slate-900">
+//         {user && <Navbar />}
+//
 //         <Routes>
-//           <Route path="/login" element={user ? <Navigate to="/posts" replace /> : <Login />} />
-//           <Route path="/posts" element={<ProtectedRoute><Posts /></ProtectedRoute>} />
-//           <Route path="*"      element={<Navigate to="/posts" replace />} />
+//           <Route path="/auth" element={user ? <Navigate to="/chat" replace /> : <Auth />} />
+//           <Route path="/chat" element={<ProtectedRoute><ChatRoom /></ProtectedRoute>} />
+//           <Route path="/news" element={<ProtectedRoute><NewsFeed /></ProtectedRoute>} />
+//           <Route path="/" element={<Navigate to="/chat" replace />} />
+//           <Route path="*" element={<Navigate to="/" replace />} />
 //         </Routes>
 //       </div>
 //     )
 //   }
 //
-// ---------------------------------------------------------------------
-// STEPS FOR YOUR VERSION
-// ---------------------------------------------------------------------
-// 1. Import Routes, Route, Navigate (react-router-dom), useAuth,
-//    Navbar, ProtectedRoute, Auth, ChatRoom, NewsFeed
-// 2. Get `user` from useAuth()
-// 3. Outer <div className="min-h-screen bg-slate-100 text-slate-900">
-// 4. {user && <Navbar />}
-// 5. Routes:
-//      /auth → if user, Navigate to /chat; else <Auth />
-//      /chat → <ProtectedRoute><ChatRoom /></ProtectedRoute>
-//      /news → <ProtectedRoute><NewsFeed /></ProtectedRoute>
-//      /     → Navigate to /chat
-//      *     → Navigate to /
-// 6. export default App
+//   export default App
 //
-// TIP: Build pages as tiny placeholders first, e.g.
-//      export default function ChatRoom() { return <p>Chat page</p> }
-//      so you can test routing before writing the real pages.
+//   WHAT EACH LINE MEANS
+//   • The outer div gives every page a light grey background
+//     (bg-slate-100) and dark text (text-slate-900).
+//   • {user && <Navbar />} → only show the Navbar IF someone is logged in.
+//   • <Routes> looks at the address bar and shows ONE matching <Route>.
+//     Things outside <Routes> (like the Navbar) are always shown.
+//   • path="/auth": if already logged in, go to /chat instead.
+//     Otherwise show the login page. (This is how you "get moved" to
+//     the chat right after logging in: `user` changes, App redraws,
+//     and this line sends you on.)
+//   • path="/chat" and "/news": wrapped in ProtectedRoute, so logged-out
+//     users are sent to /auth.
+//   • path="/" (the home address) → go to /chat.
+//   • path="*" means "any other address" → go home.
 //
-// HOW TO TEST
+// 🧪 TEST IT
 //   Logged out: visiting /chat should land you on /auth.
 //   Logged in: visiting /auth should land you on /chat.
 //
-// MOCKUPS: src/assets/mockups/*.svg  (open them in your browser)
-//
-// ✍️ WRITE YOUR CODE BELOW
+// ✍️ TYPE PARTS 1 → 3 BELOW, IN ORDER
 // ---------------------------------------------------------------------
-

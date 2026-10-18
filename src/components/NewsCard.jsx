@@ -3,69 +3,82 @@
 // =====================================================================
 //
 // WHAT THIS FILE DOES
-// -------------------
-// Shows ONE article as a card: image, title, short description,
-// source + date, and a "Read more" link that opens the article in a new tab.
+//   Shows ONE article as a card: picture, title, short description,
+//   "Source · date", and a "Read more →" link that opens it in a new tab.
+//   Like MessageBubble, it just shows what it's given.
+//
+// HOW TO USE THIS FILE
+//   The complete code is below, cut into PARTS. For each part: read the
+//   code, read what each line means, then TYPE it yourself at the bottom
+//   under ✍️.
 //
 // ---------------------------------------------------------------------
-// LESSON 1 — Images and external links in JSX
+// PART 1 of 2 — Start the component and format the date
 // ---------------------------------------------------------------------
-//   <img src={product.photo} alt={product.name} className="h-44 w-full object-cover" />
-//     object-cover = fill the box without stretching (crops the edges)
-//     alt          = text for screen readers / if the image fails
+//   function NewsCard({ article }) {
+//     const date = new Date(article.publishedAt).toLocaleDateString(undefined, {
+//       month: 'short',
+//       day: 'numeric',
+//     })
 //
-//   <a href={product.link} target="_blank" rel="noopener noreferrer">View</a>
-//     target="_blank"            → new tab
-//     rel="noopener noreferrer"  → security best practice with _blank
-//
-// ---------------------------------------------------------------------
-// LESSON 2 — Show something only if it exists
-// ---------------------------------------------------------------------
-//   {product.photo && <img src={product.photo} ... />}
-//   Some articles have no image — this avoids a broken-image icon.
-//
-// ---------------------------------------------------------------------
-// LESSON 3 — Dates & tidy text
-// ---------------------------------------------------------------------
-//   new Date('2026-10-18T09:00:00Z').toLocaleDateString()
-//       → "10/18/2026" (format depends on the user's locale)
-//   new Date(x).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
-//       → "Oct 18"
-//
-//   Tailwind: line-clamp-2 → cut text after 2 lines with "…"
+//   WHAT EACH LINE MEANS
+//   • `{ article }` is the prop NewsFeed passes in: <NewsCard article={a} />
+//   • article.publishedAt is text like "2026-10-18T09:00:00Z".
+//     new Date(...) turns it into a date, and toLocaleDateString(...)
+//     turns that into short text like "Oct 18".
+//     `undefined` means "use the visitor's language settings".
 //
 // ---------------------------------------------------------------------
-// EXAMPLE — a product card (same layout as yours)
+// PART 2 of 2 — What's shown
 // ---------------------------------------------------------------------
-//   function ProductCard({ product }) {
 //     return (
 //       <article className="flex flex-col overflow-hidden rounded-xl bg-white shadow-sm transition hover:shadow-lg">
-//         {product.photo && (
-//           <img src={product.photo} alt={product.name} className="h-44 w-full object-cover" />
+//         {article.image && (
+//           <img src={article.image} alt={article.title} className="h-44 w-full object-cover" />
 //         )}
+//
 //         <div className="flex flex-1 flex-col gap-2 p-4">
-//           <h3 className="line-clamp-2 font-semibold">{product.name}</h3>
-//           <p className="line-clamp-3 text-sm text-slate-500">{product.blurb}</p>
+//           <h3 className="line-clamp-2 font-semibold">{article.title}</h3>
+//           <p className="line-clamp-3 text-sm text-slate-500">{article.description}</p>
+//
 //           <div className="mt-auto flex items-center justify-between pt-2 text-xs text-slate-400">
-//             <span>{product.brand}</span>
-//             <a href={product.link} target="_blank" rel="noopener noreferrer"
-//                className="font-medium text-orange-600 hover:underline">View →</a>
+//             <span>
+//               {article.source?.name} · {date}
+//             </span>
+//             <a
+//               href={article.url}
+//               target="_blank"
+//               rel="noopener noreferrer"
+//               className="font-medium text-orange-600 hover:underline"
+//             >
+//               Read more →
+//             </a>
 //           </div>
 //         </div>
 //       </article>
 //     )
 //   }
-//   mt-auto pushes the footer to the bottom so all cards line up.
 //
-// ---------------------------------------------------------------------
-// STEPS FOR YOUR VERSION
-// ---------------------------------------------------------------------
-// 1. function NewsCard({ article })
-// 2. Use: article.image, article.title, article.description,
-//         article.source.name, article.publishedAt, article.url
-// 3. Copy the layout idea from the example; footer = "Source · Oct 18" + "Read more →"
-// 4. export default NewsCard
+//   export default NewsCard
 //
-// ✍️ WRITE YOUR CODE BELOW
+//   WHAT EACH LINE MEANS
+//   • <article> is just a div with a meaningful name.
+//     overflow-hidden → the picture's corners get cut to the card's
+//     rounded corners. hover:shadow-lg → bigger shadow on mouse-over,
+//     `transition` animates it.
+//   • {article.image && <img ... />} → only show a picture IF the article
+//     has one (otherwise you'd get a broken-image icon).
+//     h-44 = 176px tall, w-full = full width,
+//     object-cover = fill the box without squashing (crops the edges).
+//     alt = text for screen readers or if the picture fails.
+//   • line-clamp-2 / line-clamp-3 → cut the text after 2 / 3 lines with "…"
+//     so all cards stay a similar size.
+//   • mt-auto on the footer pushes it to the BOTTOM of the card, so the
+//     footers line up even when titles are different lengths.
+//   • article.source?.name → the site's name (`?.` in case it's missing).
+//   • The link: href = where it goes. target="_blank" = new tab.
+//     rel="noopener noreferrer" = a safety rule whenever you use _blank.
+//     It's a normal <a>, not NavLink, because it goes to ANOTHER website.
+//
+// ✍️ TYPE PARTS 1 → 2 BELOW, IN ORDER
 // ---------------------------------------------------------------------
-

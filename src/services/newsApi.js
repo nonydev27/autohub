@@ -3,88 +3,83 @@
 // =====================================================================
 //
 // WHAT THIS FILE DOES
-// -------------------
-// Holds ONE function, fetchCarNews(), that calls the GNews API and
-// returns an array of articles. No React in here — just plain JavaScript.
-// Keeping API code separate means the page stays simple and you could
-// swap to a different news API later by editing only this file.
+//   Holds ONE function, fetchCarNews(), that asks the GNews website for
+//   car news and gives back a list of articles. No React here, just plain
+//   JavaScript. Keeping it separate keeps the page simple, and you could
+//   switch to another news site later by changing only this file.
 //
-// API docs: https://gnews.io/docs/v4#search-endpoint  (free: 100 requests/day)
+//   API docs: https://gnews.io/docs/v4#search-endpoint  (free: 100 requests/day)
 //
-// ---------------------------------------------------------------------
-// LESSON 1 — fetch()
-// ---------------------------------------------------------------------
-//   const response = await fetch('https://api.example.com/jokes')
-//   if (!response.ok) {                       // ok is false for 401, 403, 429, 500...
-//     throw new Error(`Request failed: ${response.status}`)
-//   }
-//   const data = await response.json()        // turn the body into a JS object
-//
-//   Unlike Firebase, fetch does NOT throw on a 401/404/500 — it only throws
-//   if the network is down. So check response.ok yourself and `throw` —
-//   the page will `catch` it.
+// HOW TO USE THIS FILE
+//   The complete code is below, cut into PARTS. For each part: read the
+//   code, read what each line means, then TYPE it yourself at the bottom
+//   under ✍️.
 //
 // ---------------------------------------------------------------------
-// LESSON 2 — Building a URL with query parameters
+// PART 1 of 3 — Your API key
 // ---------------------------------------------------------------------
-//   const params = new URLSearchParams({
-//     q: 'pizza OR pasta',
-//     lang: 'en',
-//     max: '5',
-//   })
-//   const url = `https://api.example.com/search?${params}`
-//   // → https://api.example.com/search?q=pizza+OR+pasta&lang=en&max=5
-//   URLSearchParams handles spaces/quotes/special characters for you.
+//   const API_KEY = import.meta.env.VITE_GNEWS_API_KEY
+//
+//   WHAT IT MEANS
+//   • Reads your GNews key from .env.local (same idea as firebase.js).
 //
 // ---------------------------------------------------------------------
-// LESSON 3 — async functions return Promises
+// PART 2 of 3 — Build the web address
 // ---------------------------------------------------------------------
-//   export async function getJokes() { ...; return data.jokes }
-//   // somewhere else:
-//   const jokes = await getJokes()
+//   export async function fetchCarNews() {
+//     const params = new URLSearchParams({
+//       q: 'automotive OR "car repair" OR mechanic',
+//       lang: 'en',
+//       max: '10',
+//       apikey: API_KEY,
+//     })
+//
+//   WHAT EACH LINE MEANS
+//   • `export` → NewsFeed.jsx can import it with { fetchCarNews }.
+//     `async` → it waits for the internet, so it uses `await` inside.
+//   • URLSearchParams turns the object into the "?q=...&lang=en..." part
+//     of a web address, and safely encodes spaces and quotes for you.
+//       q      → what to search for
+//       lang   → English articles only
+//       max    → 10 articles (the free plan's maximum)
+//       apikey → proves it's you
+//   • (Don't close the { yet. PART 3 goes inside.)
 //
 // ---------------------------------------------------------------------
-// EXAMPLE — a weather service (same shape as yours)
+// PART 3 of 3 — Ask GNews and return the articles
 // ---------------------------------------------------------------------
-//   const KEY = import.meta.env.VITE_WEATHER_KEY
+//     const res = await fetch(`https://gnews.io/api/v4/search?${params}`)
 //
-//   export async function fetchWeather(city) {
-//     const params = new URLSearchParams({ q: city, appid: KEY })
-//     const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?${params}`)
-//     if (!res.ok) throw new Error('Could not load weather')
+//     if (!res.ok) {
+//       throw new Error(`Could not load news (error ${res.status})`)
+//     }
+//
 //     const data = await res.json()
-//     return data
+//     return data.articles
 //   }
 //
+//   WHAT EACH LINE MEANS
+//   • fetch(address) asks a website for data. `await` waits for the reply.
+//     The backticks + ${params} glue the address and the params together.
+//   • res.ok is false if GNews said no (401/403 = bad key, 429 = daily
+//     limit used up). fetch does NOT fail by itself in that case, so we
+//     `throw` our own error. NewsFeed will catch it and show it in red.
+//     res.status is the number (401, 429...).
+//   • res.json() reads the reply as a JavaScript object. It looks like:
+//       { totalArticles: 1234, articles: [ {...}, {...} ] }
+//   • `return data.articles` → give back just the list.
+//     One article looks like:
+//       { title, description, url, image, publishedAt, source: { name } }
+//
+// 🧪 TEST IT
+//   Paste the full address into your browser, with your key:
+//     https://gnews.io/api/v4/search?q=mechanic&lang=en&max=10&apikey=YOUR_KEY
+//   You'll see the raw data. Then build NewsFeed.jsx to show it.
+//
+// 💡 SAVE YOUR DAILY LIMIT (100/day, each page refresh uses 1)
+//   While styling NewsCard, put this as the FIRST line inside the function
+//   so it returns fake data and never calls GNews. Delete it when done:
+//     return [{ title: 'Test article', description: 'Some text...', url: 'https://example.com', image: '', publishedAt: new Date().toISOString(), source: { name: 'Test' } }]
+//
+// ✍️ TYPE PARTS 1 → 3 BELOW, IN ORDER
 // ---------------------------------------------------------------------
-// STEPS FOR YOUR VERSION
-// ---------------------------------------------------------------------
-// 1. const API_KEY = import.meta.env.VITE_GNEWS_API_KEY
-// 2. export async function fetchCarNews()
-//      params: q = 'automotive OR "car repair" OR mechanic'
-//              lang = 'en', max = '10', apikey = API_KEY
-//      url:    https://gnews.io/api/v4/search?${params}
-//      fetch → check res.ok → res.json() → return data.articles
-//
-// WHAT COMES BACK (one article):
-//   {
-//     title: "5 Signs Your Brake Pads Need Replacing",
-//     description: "Squealing, grinding and ...",
-//     url: "https://site.com/article",
-//     image: "https://site.com/photo.jpg",
-//     publishedAt: "2026-10-18T09:00:00Z",
-//     source: { name: "MotorTrend", url: "..." }
-//   }
-//
-// HOW TO TEST
-//   Paste the full URL (with your key) in the browser address bar first —
-//   you'll see the raw JSON. Then call it from NewsFeed and console.log it.
-//
-// SAVE YOUR DAILY LIMIT
-//   Every page refresh = 1 request. While styling, temporarily return a
-//   hard-coded array instead of calling fetch:
-//     return [{ title: 'Test', description: '...', url: '#', image: '', publishedAt: new Date().toISOString(), source: { name: 'Test' } }]
-//
-// ✍️ WRITE YOUR CODE BELOW
-// ---------------------------------------------------------------------
-

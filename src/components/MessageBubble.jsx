@@ -3,72 +3,88 @@
 // =====================================================================
 //
 // WHAT THIS FILE DOES
-// -------------------
-// Shows ONE chat message. ChatRoom loops over all messages and renders
-// one <MessageBubble /> per message. Your messages = orange, on the right.
-// Other people's = grey, on the left.
+//   Draws ONE chat message. ChatRoom draws one <MessageBubble /> per message.
+//     your messages     → orange, on the right, labelled "You"
+//     other people's    → grey, on the left, labelled with their name
+//   It only receives data and shows it: no state, no Firebase. Easy one!
+//
+// HOW TO USE THIS FILE
+//   The complete code is below, cut into PARTS. For each part: read the
+//   code, read what each line means, then TYPE it yourself at the bottom
+//   under ✍️.
 //
 // ---------------------------------------------------------------------
-// LESSON 1 — "Presentational" components
+// PART 1 of 3 — Start the component and work out the label
 // ---------------------------------------------------------------------
-// No state, no fetching. It just takes props and returns JSX.
-// These are the easiest components — great for practising.
+//   function MessageBubble({ message, isOwn }) {
+//     const name = isOwn ? 'You' : message.userEmail?.split('@')[0]
+//
+//     const time = message.createdAt
+//       ? message.createdAt.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+//       : ''
+//
+//   WHAT EACH LINE MEANS
+//   • `{ message, isOwn }` are the PROPS: the inputs ChatRoom passes in:
+//       <MessageBubble message={m} isOwn={true} />
+//     message looks like: { id, content, userId, userEmail, createdAt }
+//     isOwn is true if YOU sent it.
+//   • name: if it's yours, 'You'. Otherwise the part of the email before
+//     the @:  'kwame@gmail.com'.split('@') → ['kwame', 'gmail.com'],
+//     and [0] takes the first item → 'kwame'.
+//     The `?.` stops a crash if userEmail is missing.
+//   • time: Firestore stores the time as a special Timestamp.
+//       .toDate()                → turns it into a normal JS date
+//       .toLocaleTimeString(...) → turns that into text like "14:05"
+//     For a split second after YOU send, createdAt is still null (the
+//     server hasn't filled it in). So: `message.createdAt ? ... : ''`
+//     = "if there's a time, format it, otherwise use empty text".
 //
 // ---------------------------------------------------------------------
-// LESSON 2 — Building className conditionally
+// PART 2 of 3 — Pick the colours
 // ---------------------------------------------------------------------
-// Template strings (backticks) let you mix text and JS with ${ }:
+//     const bubbleStyle = isOwn
+//       ? 'bg-orange-500 text-white rounded-br-sm'
+//       : 'bg-slate-200 text-slate-900 rounded-bl-sm'
 //
-//   const color = isError ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
-//   <div className={`rounded px-3 py-2 ${color}`}>...</div>
-//
-// ---------------------------------------------------------------------
-// LESSON 3 — Formatting strings and dates
-// ---------------------------------------------------------------------
-//   'karl@gmail.com'.split('@')        // ['karl', 'gmail.com']
-//   'karl@gmail.com'.split('@')[0]     // 'karl'
-//
-//   const d = new Date('2026-10-18T14:05:00Z')
-//   d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })   // "14:05"
-//
-//   Firestore gives you a Timestamp object, not a Date. Convert it:
-//     message.createdAt.toDate()     // → a normal JS Date
-//   ⚠ For a split second after YOU send, createdAt is null (the server
-//   hasn't filled it in yet). Use optional chaining so it doesn't crash:
-//     message.createdAt?.toDate()    // undefined instead of an error
+//   WHAT IT MEANS
+//   • Yours: orange with white text. rounded-br-sm makes the bottom-right
+//     corner less round, so the bubble "points" at you.
+//   • Others: grey with dark text, bottom-LEFT corner less round.
 //
 // ---------------------------------------------------------------------
-// EXAMPLE — a notification pill (same idea)
+// PART 3 of 3 — What's shown
 // ---------------------------------------------------------------------
-//   function Notice({ notice, isUrgent }) {
-//     const style = isUrgent ? 'bg-red-500 text-white' : 'bg-slate-200 text-slate-800'
 //     return (
-//       <div className={`flex flex-col ${isUrgent ? 'items-end' : 'items-start'}`}>
-//         <span className="mb-1 text-xs text-slate-500">{notice.author.split('@')[0]}</span>
-//         <p className={`max-w-[75%] rounded-2xl px-4 py-2 ${style}`}>{notice.text}</p>
+//       <div className={`flex flex-col ${isOwn ? 'items-end' : 'items-start'}`}>
+//         <span className="mb-1 text-xs text-slate-500">
+//           {name}
+//           {time && ` · ${time}`}
+//         </span>
+//         <p className={`max-w-[75%] break-words rounded-2xl px-4 py-2 ${bubbleStyle}`}>
+//           {message.content}
+//         </p>
 //       </div>
 //     )
 //   }
 //
-// ---------------------------------------------------------------------
-// STEPS FOR YOUR VERSION
-// ---------------------------------------------------------------------
-// 1. function MessageBubble({ message, isOwn })
-//    message = { id, content, userId, userEmail, createdAt }
-// 2. const name = isOwn ? 'You' : message.userEmail?.split('@')[0]
-// 3. const time = createdAt?.toDate() formatted (Lesson 3), or '' while it's null
-// 4. Outer div: flex flex-col + items-end (own) or items-start (others)
-//      small label:  name · time   (text-xs text-slate-500)
-//      bubble:       max-w-[75%] rounded-2xl px-4 py-2
-//                    own → bg-orange-500 text-white rounded-br-sm
-//                    others → bg-slate-200 text-slate-900 rounded-bl-sm
-//                    add `break-words` so long words don't overflow
-// 5. export default MessageBubble
+//   export default MessageBubble
 //
-// HOW TO TEST
-//   Before ChatRoom works, render it with fake data in ChatRoom:
-//   <MessageBubble isOwn={false} message={{ content: 'Hi', userEmail: 'a@b.com', createdAt: null }} />
+//   WHAT EACH LINE MEANS
+//   • className={`...${...}...`} → a template string (backticks) so we can
+//     mix fixed classes with ones that depend on isOwn.
+//   • flex flex-col + items-end → pushes everything to the RIGHT.
+//     items-start → to the LEFT.
+//   • The small grey label shows "kwame · 13:58". `{time && ...}` only adds
+//     " · 13:58" if there is a time.
+//   • The bubble: max-w-[75%] = never wider than 75% of the chat.
+//     break-words = very long words wrap instead of sticking out.
+//     Then the colours from PART 2.
+//   • {message.content} is the message text.
 //
-// ✍️ WRITE YOUR CODE BELOW
+// 🧪 TEST IT (before ChatRoom works)
+//   In ChatRoom's placeholder, return this instead of <p>Chat page</p>:
+//     <MessageBubble isOwn={false} message={{ content: 'Hi', userEmail: 'a@b.com', createdAt: null }} />
+//   (and import MessageBubble at the top of ChatRoom). Try isOwn={true} too.
+//
+// ✍️ TYPE PARTS 1 → 3 BELOW, IN ORDER
 // ---------------------------------------------------------------------
-
