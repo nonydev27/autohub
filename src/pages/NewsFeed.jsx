@@ -64,16 +64,7 @@ function NewsFeed() {
         </label>
       </PageHeader>
 
-      {news.isDemo && (
-        <p className="mb-6 flex items-start gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
-          <Sparkles size={17} className="mt-0.5 shrink-0" />
-          <span>
-            Showing demo stories. Add <code className="rounded bg-black/30 px-1">VITE_GNEWS_API_KEY</code> to{' '}
-            <code className="rounded bg-black/30 px-1">.env.local</code> for live news.
-            {news.reason && <span className="text-amber-200/60"> ({news.reason})</span>}
-          </span>
-        </p>
-      )}
+      
 
       <div className="no-scrollbar mb-8 flex gap-2 overflow-x-auto">
         {availableCategories.map((c) => (

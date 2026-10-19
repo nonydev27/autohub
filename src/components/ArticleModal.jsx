@@ -52,21 +52,7 @@ function ArticleModal({ article, onClose, saved, onToggleSave }) {
             ))}
           </div>
 
-          {article.url ? (
-            <a
-              href={article.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-8 inline-flex items-center gap-2 rounded-xl bg-linear-to-r from-orange-500 to-amber-400 px-5 py-3 font-semibold text-zinc-950 transition hover:brightness-110"
-            >
-              Read the full story on {article.source} <ExternalLink size={16} />
-            </a>
-          ) : (
-            <p className="mt-8 flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-zinc-400">
-              <Sparkles size={16} className="text-orange-400" />
-              Demo story written for AutoHub.
-            </p>
-          )}
+        
         </div>
       </article>
     </div>
