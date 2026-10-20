@@ -13,9 +13,9 @@ AutoHub is a dark, app-like web app for mechanics and automotive enthusiasts: li
 - **Responsive:** Desktop top navigation, mobile bottom tab bar.
 
 ## Tech Stack
-- **Frontend:** React 19 (Vite), React Router, Tailwind CSS v4, lucide-react
-- **Backend/BaaS:** Firebase (Authentication, Cloud Firestore)
-- **Data:** GNews API, NHTSA vPIC & Recalls APIs, Unsplash photos
+- **Frontend:** React 19 (Vite), React Router, Tailwind CSS v4, lucide-react.
+- **Backend/BaaS:** Firebase (Authentication, Cloud Firestore).
+- **Data:** GNews API, NHTSA vPIC & Recalls APIs, Unsplash photos.
 
 ## Getting Started
 1. Clone the repository and run `npm install`.
